@@ -1,0 +1,19 @@
+@import "tailwindcss";
+#welcome {
+  opacity: 0;
+  animation: welcomeAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+@keyframes welcomeAppear {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+    filter: blur(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
