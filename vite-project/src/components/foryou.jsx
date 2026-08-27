@@ -44,7 +44,7 @@ function Foryou() {
   };
 
   return (
-    <section className=" mt-8 pb-8 sm:mt-10 md:w-xl md:block md:mx-auto sm: w-[90vw] sm:block sm:mx-auto mx-auto">
+    <section className=" mt-8 pb-8 sm:mt-10 md:w-xl md:block md:mx-auto sm: w-[80vw] sm:block sm:mx-auto mx-auto">
       <div className="mb-4 flex items-center justify-between px-1">
         <h2 className="text-2xl font-semibold tracking-wide text-white drop-shadow-md">
           For you

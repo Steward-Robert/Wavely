@@ -2,7 +2,7 @@ import { Home, User, Plus, Bookmark, Settings } from "lucide-react";
 
 function LSidebar() {
   return (
-    <div className="fixed top-27 left-1  w-80 hidden sm:hidden md:block md:h-96 md:w-20 lg:w-60 xl:block xl:w-70">
+    <div className="fixed top-20 left-1  w-80 hidden sm:hidden md:block md:h-96 md:w-20 lg:w-60 xl:block xl:w-70">
       <main className="md:flex md:flex-col md:gap-6 md:relative md:top-5  ">
         <div className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] pl-3 hover:bg-white/10 h-13 items-center cursor-pointer duration-500">
           <Home color="gray" size={30} />
