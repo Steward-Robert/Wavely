@@ -1,32 +1,21 @@
-import { useNavigate } from "react-router";
-
-function Register({ setIsLogin }) {
-  const navigate = useNavigate();
-
+function Login({ setIsLogin }) {
   return (
     <div className="w-full text-white">
-      <h2 className="text-3xl font-bold mb-6 text-center ">Register</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center ">Login</h2>
 
       <div className="flex items-center gap-6">
         {/* Formulaire Principal */}
         <form className="flex-1 flex flex-col gap-5">
           <input
-            type="text"
-            placeholder="Enter your full name"
-            required
-            className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300  transition-colors"
-          />
-
-          <input
             type="email"
-            placeholder="Your Email"
+            placeholder="Email"
             required
             className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors"
           />
 
           <input
             type="password"
-            placeholder="Choose a password"
+            placeholder="Password"
             required
             className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors"
           />
@@ -38,13 +27,13 @@ function Register({ setIsLogin }) {
             Join us
           </button>
           <p className="text-xs text-center text-gray-400 mt-2">
-            Already a Member ?
+            Do not have an account yet ?
             <button
               type="button"
-              onClick={() => setIsLogin(true)}
+              onClick={() => setIsLogin(false)}
               className="text-orange-300 hover:underline ml-2 cursor-pointer"
             >
-              Sign in here
+              Register here
             </button>
           </p>
         </form>
@@ -53,4 +42,4 @@ function Register({ setIsLogin }) {
   );
 }
 
-export default Register;
+export default Login;

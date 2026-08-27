@@ -1,13 +1,26 @@
 @import "tailwindcss";
 
+:root {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  color: inherit;
+  font-synthesis: none;
+}
 body {
   min-height: 100vh;
-
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url("1787405538186.png");
-
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.6)),
+    url("1787604938678.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  background-attachment: fixed;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

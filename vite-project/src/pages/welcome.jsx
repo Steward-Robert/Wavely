@@ -1,7 +1,10 @@
-import Register from "./register-form";
+import Register from "../components/register-form";
 import "../styles/welcome.css";
+import Login from "../components/login.jsx";
+import { useState } from "react";
 
 function Welcome() {
+  const [isLogin, setIsLogin] = useState(false);
   return (
     <div
       id="welcome"
@@ -55,7 +58,11 @@ function Welcome() {
             flex flex-col justify-center
           "
         >
-          <Register />
+          {isLogin ? (
+            <Login setIsLogin={setIsLogin} />
+          ) : (
+            <Register setIsLogin={setIsLogin} />
+          )}
         </div>
       </div>
     </div>

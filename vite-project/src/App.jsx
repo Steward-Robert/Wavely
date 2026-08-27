@@ -1,7 +1,9 @@
 import "./styles/App.css";
 import Loader from "./components/loader.jsx";
-import Welcome from "./components/welcome.jsx";
+import Welcome from "../src/pages/welcome.jsx";
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router";
+import Feed from "../src/pages/feed.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,14 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
-  return <div>{loading ? <Loader /> : <Welcome />}</div>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={loading ? <Loader /> : <Welcome />} />
+        <Route path="/feeds" element={<Feed />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
