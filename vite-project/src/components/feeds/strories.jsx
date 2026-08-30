@@ -1,5 +1,5 @@
-import "../styles/index.css";
-import stories from "../data/stories";
+import "../../styles/index.css";
+import stories from "../../data/stories";
 
 function Stories() {
   return (

@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { EyeClosed, Eye } from "lucide-react";
+
 function Login({ setIsLogin }) {
+  const [isClosed, setIsClosed] = useState(true);
   return (
     <div className="w-full text-white">
       <h2 className="text-3xl font-bold mb-6 text-center ">Login</h2>
@@ -13,12 +17,25 @@ function Login({ setIsLogin }) {
             className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors"
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors"
-          />
+          <div className="flex items-center">
+            <input
+              type={isClosed ? "password" : "text"}
+              placeholder="Password"
+              required
+              className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors"
+            />
+            {isClosed ? (
+              <EyeClosed
+                className="mb-2.5 mr-5 cursor-pointer"
+                onClick={() => setIsClosed(!isClosed)}
+              />
+            ) : (
+              <Eye
+                className="mb-2.5 mr-5 cursor-pointer"
+                onClick={() => setIsClosed(!isClosed)}
+              />
+            )}
+          </div>
 
           <button
             type="submit"

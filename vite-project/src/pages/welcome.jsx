@@ -1,6 +1,6 @@
-import Register from "../components/register-form";
+import Register from "../components/home-page/register-form.jsx";
 import "../styles/welcome.css";
-import Login from "../components/login.jsx";
+import Login from "../components/home-page/login.jsx";
 import { useState } from "react";
 
 function Welcome() {
