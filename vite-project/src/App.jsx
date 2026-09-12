@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
+import Post from "./pages/post.jsx";
+import Settings from "./pages/settings.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,8 @@ function App() {
         <Route path="/" element={loading ? <Loader /> : <Welcome />} />
         <Route path="/feeds" element={<Feed />} />
         <Route path="fr" element={<FriendsPage />} />
+        <Route path="pst" element={<Post />} />
+        <Route path="settigns" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );

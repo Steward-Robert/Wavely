@@ -26,7 +26,12 @@ function BMenu() {
         </div>
 
         <div className="p-2 h-11 bg-white/30 rounded-full">
-          <Plus className="cursor-pointer" color="white" size={28} />
+          <Plus
+            className="cursor-pointer"
+            color="white"
+            size={28}
+            onClick={() => navigate("/pst")}
+          />
         </div>
 
         <div className="flex flex-col gap-1 items-center ">
@@ -39,7 +44,11 @@ function BMenu() {
         </div>
 
         <div className="flex flex-col gap-1 items-center ">
-          <Settings className="relative top-2 cursor-pointer" color="white" />
+          <Settings
+            className="relative top-2 cursor-pointer"
+            color="white"
+            onClick={() => navigate("/settigns")}
+          />
           <p className="text-white text-[12px] mt-1">Settings</p>
         </div>
       </div>
