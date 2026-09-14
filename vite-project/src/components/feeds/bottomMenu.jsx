@@ -1,58 +1,77 @@
-import { Home, Users, Plus, Bookmark, Settings } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Bookmark, Home, Plus, Settings, Users } from "lucide-react";
+import { useLocation, useNavigate } from "react-router";
+
+const menuItems = [
+  { label: "Home", path: "/feeds", icon: Home },
+  { label: "Friends", path: "/fr", icon: Users },
+  { label: "Saved", path: null, icon: Bookmark },
+  { label: "Settings", path: "/settigns", icon: Settings },
+];
 
 function BMenu() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   return (
-    <div className="  sticky bottom-0 border-2  h-14 z-50  bg-black/60 rounded-xl sm:mx-6 lg:hidden md:hidden">
-      <div className="flex justify-between mx-5">
-        <div className="flex flex-col gap-1 items-center ">
-          <Home
-            className="relative top-2 cursor-pointer"
-            color="white"
-            size={28}
-            onClick={() => navigate("/feeds")}
-          />
-          <p className="text-white mt-1 text-[13px]">Home</p>
-        </div>
-        <div className="flex flex-col gap-1 items-center ">
-          <Users
-            className="relative top-2 cursor-pointer"
-            color="white"
-            size={28}
-            onClick={() => navigate("/fr")}
-          />
-          <p className="text-white mt-1 text-[13px]">Friends</p>
-        </div>
+    <nav
+      aria-label="Mobile navigation"
+      className="sticky bottom-3 z-50 mx-3 rounded-2xl border border-white/10 bg-[#08090e]/90 p-2 shadow-[0_16px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:mx-6 md:hidden lg:hidden"
+    >
+      <div className="grid grid-cols-5 items-end gap-1">
+        {menuItems.slice(0, 2).map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
 
-        <div className="p-2 h-11 bg-white/30 rounded-full">
-          <Plus
-            className="cursor-pointer"
-            color="white"
-            size={28}
-            onClick={() => navigate("/pst")}
-          />
-        </div>
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-label={item.label}
+              onClick={() => item.path && navigate(item.path)}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium transition focus:outline-none focus:ring-2 focus:ring-amber-300/50 ${
+                isActive
+                  ? "bg-amber-300/12 text-amber-200"
+                  : "text-slate-400 hover:bg-white/6 hover:text-white"
+              }`}
+            >
+              <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
 
-        <div className="flex flex-col gap-1 items-center ">
-          <Bookmark
-            className="relative top-2 cursor-pointer"
-            color="white"
-            size={28}
-          />
-          <p className="text-white text-[12px] mt-1">Saved</p>
-        </div>
+        <button
+          type="button"
+          aria-label="Create a post"
+          onClick={() => navigate("/pst")}
+          className="-mt-6 flex h-14 w-14 items-center justify-center justify-self-center rounded-2xl border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-[0_8px_24px_rgba(252,211,77,0.25)] transition hover:-translate-y-1 hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:ring-offset-2 focus:ring-offset-[#08090e]"
+        >
+          <Plus size={27} strokeWidth={2.2} />
+        </button>
 
-        <div className="flex flex-col gap-1 items-center ">
-          <Settings
-            className="relative top-2 cursor-pointer"
-            color="white"
-            onClick={() => navigate("/settigns")}
-          />
-          <p className="text-white text-[12px] mt-1">Settings</p>
-        </div>
+        {menuItems.slice(2).map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-label={item.label}
+              onClick={() => item.path && navigate(item.path)}
+              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium transition focus:outline-none focus:ring-2 focus:ring-amber-300/50 ${
+                isActive
+                  ? "bg-amber-300/12 text-amber-200"
+                  : "text-slate-400 hover:bg-white/6 hover:text-white"
+              }`}
+            >
+              <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </nav>
   );
 }
 

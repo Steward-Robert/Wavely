@@ -12,6 +12,7 @@ function Register({ setIsLogin }) {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,14 +27,11 @@ function Register({ setIsLogin }) {
           password: userPassword,
         },
       );
+      navigate("/feeds");
       console.log(response.data);
     } catch (error) {
-      console.log("messages:", error.message);
-      console.log("code:", error.code);
-      console.log("status:", error.response?.status);
-      console.log("data:", error.response?.data);
+      setError(error.response?.data.message);
     } finally {
-      navigate("/feeds");
       setLoading(false);
     }
   };
@@ -98,7 +96,9 @@ function Register({ setIsLogin }) {
               />
             )}
           </div>
-
+          <div>
+            <p className="text-red-200 text-center">{error}</p>
+          </div>
           <button
             type="submit"
             className="mt-4 w-full bg-orange-300 hover:bg-orange-500 text-white font-medium py-2.5 rounded-sm transition-colors text-sm cursor-pointer"

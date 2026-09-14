@@ -10,6 +10,7 @@ function Login({ setIsLogin }) {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [login, setLogin] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,14 +24,15 @@ function Login({ setIsLogin }) {
           password: userPassword,
         },
       );
+      navigate("/feeds");
       console.log(response.data);
     } catch (error) {
       console.log("messages:", error.message);
       console.log("code:", error.code);
       console.log("status:", error.response?.status);
       console.log("data:", error.response?.data);
+      setLogin(error.response?.data.message);
     } finally {
-      navigate("/feeds");
       setLoading(false);
     }
   };
@@ -78,6 +80,7 @@ function Login({ setIsLogin }) {
               />
             )}
           </div>
+          <div className="text-red-200 text-center"> {login}</div>
 
           <button
             type="submit"

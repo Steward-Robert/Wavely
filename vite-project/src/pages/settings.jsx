@@ -1,5 +1,7 @@
 import BMenu from "../components/feeds/bottomMenu.jsx";
 import Header from "../components/header.jsx";
+import Popup from "../components/logout/logout-popup.jsx";
+import Loader from "../components/loader.jsx";
 import {
   UserRound,
   LogOut,
@@ -8,18 +10,26 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-function Settings() {
+import { useNavigate } from "react-router";
+
+function Settings({ popupOpen, setPopupOpen, isloading, setIsLoading }) {
+  const navigate = useNavigate();
   return (
     <>
       <Header />
       <div className=" h-[80vh] my-3 w-[95vw] mx-auto flex justify-center flex-col">
+        {isloading && <Loader />}
+        {popupOpen && (
+          <Popup setPopupOpen={setPopupOpen} setIsLoading={setIsLoading} />
+        )}
         <div
+          onClick={() => navigate("/account")}
           className="text-white flex gap-3 mb-6 items-center ml-2
            border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] hover:bg-white/10 h-13  cursor-pointer duration-500 w-[250px] hover:translate-x-2  hover:pl-2.5
         "
         >
           <UserRound color="gray" size={30} />
-          <p className="text-xl">Profil Account</p>
+          <p className="text-xl">My Account</p>
         </div>
 
         <div
@@ -33,6 +43,7 @@ function Settings() {
         </div>
 
         <div
+          onClick={() => navigate("/about")}
           className="text-white flex gap-3 mb-6 items-center ml-2
            border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] hover:bg-white/10 h-13  cursor-pointer duration-500 w-[250px] hover:translate-x-2  hover:pl-2.5
         "
@@ -53,6 +64,7 @@ function Settings() {
         </div>
 
         <div
+          onClick={() => setPopupOpen(true)}
           className="text-white flex gap-3 mb-6 items-center ml-2
            border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] hover:bg-white/10 h-13  cursor-pointer duration-500 w-[250px] hover:translate-x-2  hover:pl-2.5
         "

@@ -16,6 +16,29 @@ body {
   font-family: Georgia, "Times New Roman", Times, serif;
   background-attachment: fixed;
 }
+
+@keyframes headerWaveMotion {
+  0%,
+  100% {
+    transform: rotate(-5deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(5deg) translateY(-2px);
+  }
+}
+
+.header-wave-motion {
+  transform-origin: center;
+  animation: headerWaveMotion 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header-wave-motion {
+    animation: none;
+  }
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

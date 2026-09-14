@@ -1,39 +1,33 @@
-function FriendMenu({ setActiveMenu }) {
+function FriendMenu({ activeMenu, setActiveMenu }) {
+  const menuItems = [
+    ["received", "Friend requests"],
+    ["sent", "Sent requests"],
+    ["friends", "My friends"],
+    ["people", "People you may know"],
+  ];
+
   return (
     <div className="mt-5">
-      <p className="ml-6 text-2xl text-white mb-8 underline underline-offset-8 lg:fixed lg:right-7.5 lg:top-25">
+      <p className="ml-6 mb-5 text-xl font-semibold tracking-tight text-white lg:fixed lg:right-7.5 lg:top-25 lg:text-2xl">
         Connect with others
       </p>
 
-      <div className="border border-white/20 rounded-2xl flex block mx-auto items-center justify-center w-[350px] bg-black/30 lg:fixed lg:right-1 lg:w-[270px] lg:py-3 lg:top-40 lg:bg-transparent lg:border-none">
-        <div className="flex flex-col gap-2 text-[18px] my-2.5">
-          <button
-            onClick={() => setActiveMenu("received")}
-            className="border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] pl-3 hover:bg-white/10 h-13 items-center cursor-pointer duration-500 text-white"
-          >
-            Friend request
-          </button>
-
-          <button
-            onClick={() => setActiveMenu("sent")}
-            className="border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] pl-3 hover:bg-white/10 h-13 items-center cursor-pointer duration-500 text-white"
-          >
-            Sent request
-          </button>
-
-          <button
-            onClick={() => setActiveMenu("friends")}
-            className="border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] pl-3 hover:bg-white/10 h-13 items-center cursor-pointer duration-500 text-white"
-          >
-            My friends
-          </button>
-
-          <button
-            onClick={() => setActiveMenu("people")}
-            className="border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px] pl-3 hover:bg-white/10 h-13 items-center cursor-pointer duration-500 text-white"
-          >
-            People you may know
-          </button>
+      <div className="mx-auto flex w-[350px] items-center justify-center rounded-2xl border border-white/10 bg-black/30 lg:fixed lg:right-1 lg:top-40 lg:w-[270px] lg:border-none lg:bg-transparent lg:py-3">
+        <div className="my-2.5 flex w-full flex-col gap-1.5 px-2 text-base">
+          {menuItems.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveMenu(id)}
+              className={`flex h-11 w-full items-center rounded-xl border pl-4 text-left transition duration-300 focus:outline-none focus:ring-2 focus:ring-amber-300/50 ${
+                activeMenu === id
+                  ? "border-amber-300/40 bg-amber-300/12 text-amber-100 shadow-[0_8px_24px_rgba(252,211,77,0.08)]"
+                  : "border-transparent text-slate-300 hover:border-white/10 hover:bg-white/8 hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
     </div>

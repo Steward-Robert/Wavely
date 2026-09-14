@@ -7,9 +7,13 @@ import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
 import Post from "./pages/post.jsx";
 import Settings from "./pages/settings.jsx";
+import ProfilAcc from "./pages/profilAcc.jsx";
+import AboutWavely from "./pages/about.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [isloading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,9 +28,21 @@ function App() {
       <Routes>
         <Route path="/" element={loading ? <Loader /> : <Welcome />} />
         <Route path="/feeds" element={<Feed />} />
-        <Route path="fr" element={<FriendsPage />} />
+        <Route path="/fr" element={<FriendsPage />} />
         <Route path="pst" element={<Post />} />
-        <Route path="settigns" element={<Settings />} />
+        <Route
+          path="settigns"
+          element={
+            <Settings
+              popupOpen={popupOpen}
+              setPopupOpen={setPopupOpen}
+              isloading={isloading}
+              setIsLoading={setIsLoading}
+            />
+          }
+        />
+        <Route path="account" element={<ProfilAcc />} />
+        <Route path="about" element={<AboutWavely />} />
       </Routes>
     </BrowserRouter>
   );
