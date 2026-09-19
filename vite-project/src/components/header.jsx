@@ -29,7 +29,7 @@ function Header() {
           <button
             type="button"
             aria-label="Open notifications"
-            className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 transition hover:border-cyan-200/30 hover:bg-white/8 hover:text-cyan-100 sm:flex"
+            className="h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 transition hover:border-cyan-200/30 hover:bg-white/8 hover:text-cyan-100 sm:flex flex items-center"
           >
             <Bell size={19} strokeWidth={1.8} />
           </button>

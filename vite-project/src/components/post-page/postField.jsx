@@ -1,108 +1,147 @@
-import { ImagePlus, Send, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Image, Video, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 function PostField() {
-  const [caption, setCaption] = useState("");
-  const [image, setImage] = useState(null);
-  const [notice, setNotice] = useState("");
+  const videoInput = useRef(null);
+  const imageInput = useRef(null);
 
-  useEffect(() => {
-    return () => {
-      if (image?.preview) URL.revokeObjectURL(image.preview);
-    };
-  }, [image]);
+  const [imgFiles, setImgFiles] = useState([]);
+  const [videoFiles, setVideoFiles] = useState([]);
 
-  function handleImageChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleImgFiles = (e) => {
+    const selectImage = Array.from(e.target.files);
+    setImgFiles(selectImage);
+  };
 
-    if (image?.preview) URL.revokeObjectURL(image.preview);
-    setImage({ file, preview: URL.createObjectURL(file) });
-    setNotice("");
-  }
+  const handleVideo = (e) => {
+    const selectVideo = Array.from(e.target.files);
+    setVideoFiles(selectVideo);
+  };
 
-  function removeImage() {
-    if (image?.preview) URL.revokeObjectURL(image.preview);
-    setImage(null);
-  }
+  const handleClick = () => {
+    videoInput.current.click();
+  };
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    if (!caption.trim() && !image) {
-      setNotice("Add a thought or an image before posting.");
-      return;
-    }
+  const handleClickImg = () => {
+    imageInput.current.click();
+  };
 
-    setNotice("Your post is ready to share.");
-  }
+  const removeImage = (indexToRemove) => {
+    setImgFiles((files) => files.filter((_, index) => index !== indexToRemove));
+  };
+
+  const removeVideo = (indexToRemove) => {
+    setVideoFiles((files) =>
+      files.filter((_, index) => index !== indexToRemove),
+    );
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="p-5 sm:p-6">
-      <label htmlFor="post-caption" className="sr-only">
-        What is on your mind?
-      </label>
-      <textarea
-        id="post-caption"
-        value={caption}
-        onChange={(event) => {
-          setCaption(event.target.value);
-          setNotice("");
-        }}
-        placeholder="What is on your mind?"
-        className="min-h-44 w-full resize-y bg-transparent text-lg leading-relaxed text-white outline-none placeholder:text-white/35"
-      />
+    <div className="px-7 pb-7">
+      <div>
+        <textarea
+          placeholder="What's going on today?"
+          className="min-h-32 w-full resize-none rounded-2xl border border-white/10 bg-black/10 px-4 py-4 text-base text-white outline-none placeholder:text-white/35 transition focus:border-amber-200/45 focus:bg-black/15"
+        />
 
-      {image && (
-        <div className="relative mt-4 overflow-hidden rounded-2xl border border-white/15 bg-black/20">
-          <img
-            src={image.preview}
-            alt="Selected post preview"
-            className="max-h-80 w-full object-cover"
-          />
-          <button
-            type="button"
-            onClick={removeImage}
-            aria-label="Remove selected image"
-            title="Remove image"
-            className="absolute right-3 top-3 rounded-full bg-black/70 p-2 text-white transition hover:bg-black"
-          >
-            <X size={17} />
+        {/* IMAGE INPUT */}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          ref={imageInput}
+          onChange={handleImgFiles}
+        />
+
+        {/* VIDEO INPUT */}
+        <input
+          type="file"
+          accept="video/*"
+          multiple
+          className="hidden"
+          ref={videoInput}
+          onChange={handleVideo}
+        />
+
+        {/* PREVIEW */}
+        {(imgFiles.length > 0 || videoFiles.length > 0) && (
+          <div className="my-4 max-h-72 overflow-auto rounded-2xl border border-white/10 bg-black/10 p-3">
+            {/* IMAGES */}
+            <div className="flex flex-wrap gap-3">
+              {imgFiles.map((image, index) => (
+                <div key={index} className="group relative">
+                  <img
+                    src={URL.createObjectURL(image)}
+                    alt={image.name}
+                    className="h-34 w-35 rounded-xl object-cover ring-1 ring-white/15"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    aria-label={`Remove ${image.name}`}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-black/45 text-white backdrop-blur-md transition hover:bg-rose-500/80"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* VIDEOS */}
+            <div className="mt-3 flex flex-wrap gap-3">
+              {videoFiles.map((video, index) => (
+                <div key={index} className="group relative">
+                  <video
+                    src={URL.createObjectURL(video)}
+                    controls
+                    className="h-40 w-72 max-w-full rounded-xl object-cover ring-1 ring-white/15"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeVideo(index)}
+                    aria-label={`Remove ${video.name}`}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-black/45 text-white backdrop-blur-md transition hover:bg-rose-500/80"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* BUTTONS */}
+        <div className="mt-5 flex items-center justify-between gap-4">
+          <div className="flex gap-3">
+            {/* IMAGE BUTTON */}
+            <button
+              type="button"
+              onClick={handleClickImg}
+              aria-label="Add images"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100"
+            >
+              <Image size={21} />
+            </button>
+
+            {/* VIDEO BUTTON */}
+            <button
+              type="button"
+              onClick={handleClick}
+              aria-label="Add video"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100"
+            >
+              <Video size={21} />
+            </button>
+          </div>
+
+          <button className="rounded-xl border border-emerald-200/20 bg-emerald-300/15 px-5 py-2.5 text-sm font-semibold text-emerald-50 transition hover:-translate-y-0.5 hover:bg-emerald-300/25">
+            Publish
           </button>
         </div>
-      )}
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-4">
-        <div className="flex items-center gap-3">
-          <label
-            htmlFor="post-image"
-            className="flex cursor-pointer items-center gap-2 rounded-full border border-white/15 px-3 py-2 text-sm text-white/70 transition hover:border-amber-200/60 hover:text-amber-200"
-          >
-            <ImagePlus size={18} />
-            Add image
-          </label>
-          <input
-            id="post-image"
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="sr-only"
-          />
-          <span className="text-xs text-white/40">{caption.length}/280</span>
-        </div>
-        <button
-          type="submit"
-          className="flex items-center gap-2 rounded-full bg-amber-300 px-5 py-2.5 font-semibold text-black transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-200/70 focus:ring-offset-2 focus:ring-offset-black"
-        >
-          Post
-          <Send size={16} />
-        </button>
       </div>
-      {notice && (
-        <p className="mt-4 text-sm text-amber-200/90" role="status">
-          {notice}
-        </p>
-      )}
-    </form>
+    </div>
   );
 }
+
 export default PostField;

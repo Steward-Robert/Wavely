@@ -15,7 +15,7 @@ function BMenu() {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="sticky bottom-3 z-50 mx-3 rounded-2xl border border-white/10 bg-[#08090e]/90 p-2 shadow-[0_16px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:mx-6 md:hidden lg:hidden"
+      className="fixed inset-x-3 bottom-1 z-50 rounded-2xl border border-white/10 bg-[#08090e]/90 p-2 shadow-[0_16px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:inset-x-6 md:hidden lg:hidden"
     >
       <div className="grid grid-cols-5 items-end gap-1">
         {menuItems.slice(0, 2).map((item) => {

@@ -3,36 +3,36 @@ import friends from "../../data/friends";
 
 function RSidebar() {
   return (
-    <div className="fixed top-27 right-1   h-12 w-80 hidden sm:hidden md:block md:h-70 md:w-45 lg:w-50 xl:w-60 xl:block xl:w-70 overflow-y-scroll scrollbar-none md:hidden lg:block">
-      <div className="  rounded-2xl ">
-        <h2 className="text-amber-50 text-center mb-3 text-2xl underline underline-offset-7 sticky top-0 z-30 bg-black/80 pb-5 rounded-2xl">
+    <aside className="fixed right-3 top-24 z-40 hidden h-[calc(100vh-8rem)] w-64 overflow-y-auto scrollbar-none lg:top-28 lg:block xl:w-72">
+      <div className="rounded-2xl border border-white/15 bg-white/5 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
+        <h2 className="sticky top-0 z-30 mb-3 rounded-xl border-b border-white/10 bg-black/20 px-3 py-4 text-center text-xl font-semibold tracking-tight text-amber-100 backdrop-blur-xl">
           You may know
         </h2>
         {friends.map((friend) => {
           return (
-            <>
-              <main
-                key={friend.id}
-                className="flex justify-between items-center mb-4 hover:border-b-2 hover:border-amber-300 rounded-2xl hover:bg-white/10 h-13 duration-300 hover:-translate-x-2"
-              >
-                <div className="flex items-center gap-1">
-                  <div className="h-10 w-10 rounded-full border-2 border-white/20 ml-3">
-                    <img
-                      src={friend.img}
-                      className="h-full w-full rounded-full object-cover"
-                    />
-                  </div>
-                  <h2 className="text-white ml-1">{friend.name}</h2>
+            <main
+              key={friend.id}
+              className="mb-2 flex h-14 items-center justify-between rounded-xl border border-transparent px-2 transition duration-300 hover:-translate-x-2 hover:border-amber-200/20 hover:bg-white/8"
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="h-10 w-10 shrink-0 rounded-full border border-amber-100/30 bg-white/10 p-0.5">
+                  <img
+                    src={friend.img}
+                    alt={friend.name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
                 </div>
+                <h2 className="truncate text-base font-medium text-white">
+                  {friend.name}
+                </h2>
+              </div>
 
-                <Button />
-              </main>
-              ;
-            </>
+              <Button />
+            </main>
           );
         })}
       </div>
-    </div>
+    </aside>
   );
 }
 export default RSidebar;

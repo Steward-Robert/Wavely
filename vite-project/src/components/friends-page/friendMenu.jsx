@@ -19,7 +19,7 @@ function FriendMenu({ activeMenu, setActiveMenu }) {
               key={id}
               type="button"
               onClick={() => setActiveMenu(id)}
-              className={`flex h-11 w-full items-center rounded-xl border pl-4 text-left transition duration-300 focus:outline-none focus:ring-2 focus:ring-amber-300/50 ${
+              className={`flex h-11 w-full items-center rounded-xl border pl-4 text-left transition duration-300 focus:outline-none  ${
                 activeMenu === id
                   ? "border-amber-300/40 bg-amber-300/12 text-amber-100 shadow-[0_8px_24px_rgba(252,211,77,0.08)]"
                   : "border-transparent text-slate-300 hover:border-white/10 hover:bg-white/8 hover:text-white"

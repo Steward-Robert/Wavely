@@ -12,7 +12,6 @@ import AboutWavely from "./pages/about.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
-  const [popupOpen, setPopupOpen] = useState(false);
   const [isloading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -34,8 +33,6 @@ function App() {
           path="settigns"
           element={
             <Settings
-              popupOpen={popupOpen}
-              setPopupOpen={setPopupOpen}
               isloading={isloading}
               setIsLoading={setIsLoading}
             />

@@ -1,49 +1,53 @@
 import { Home, User, Plus, Bookmark, Settings } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+
+const navItems = [
+  { label: "Home", path: "/feeds", icon: Home },
+  { label: "Friends", path: "/fr", icon: User },
+  { label: "Create a post", path: "/pst", icon: Plus },
+  { label: "Saved", path: null, icon: Bookmark },
+  { label: "Settings", path: "/settigns", icon: Settings },
+];
 
 function LSidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   return (
-    <div className="fixed top-20 md:top-30 left-1  w-80 hidden sm:hidden md:block md:h-96 md:w-20 lg:w-60 xl:block xl:w-70 z-50 ml-3">
-      <main className="md:flex md:flex-col md:gap-6 md:relative md:top-5  ">
-        <div
-          className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px]  hover:bg-white/10 hover:pl-2.5 h-13 items-center cursor-pointer duration-500 hover:translate-x-2 w-[250px]"
-          onClick={() => navigate("/feeds")}
-        >
-          <Home color="gray" size={30} />
-          <p className="text-amber-50 md:hidden lg:block lg:ml-5">Home</p>
-        </div>
-        <div
-          className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px]  hover:bg-white/10 hover:pl-2.5 h-13 items-center cursor-pointer duration-500 hover:translate-x-2 w-[250px]"
-          onClick={() => navigate("/fr")}
-        >
-          <User color="gray" size={30} />
-          <p className="text-amber-50 md:hidden lg:block lg:ml-5">Friends</p>
-        </div>
-        <div
-          className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px]  hover:bg-white/10 hover:pl-2.5 h-13 items-center cursor-pointer duration-500 hover:translate-x-2 w-[250px]"
-          onClick={() => navigate("/pst")}
-        >
-          <div className="md:inline-block  md: bg-white/30 md:rounded-full">
-            <Plus className="cursor-pointer" color="white" size={30} />
-          </div>
-          <p className="text-amber-50 md:hidden lg:block lg:ml-5">
-            Create a post
+    <aside className="fixed left-3 top-24 z-50 hidden md:block lg:top-28">
+      <nav className="flex w-16 flex-col gap-4 rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/20 backdrop-blur-xl lg:w-60">
+        <div className="mb-2 border-b border-white/10 px-2 pb-3 lg:px-3">
+          <p className="hidden text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-100/65 lg:block">
+            Navigate
           </p>
+          <div className="mx-auto mt-1 h-1 w-1 rounded-full bg-amber-200/80 lg:hidden" />
         </div>
-        <div className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px]  hover:bg-white/10 hover:pl-2.5 h-13 items-center cursor-pointer duration-500 hover:translate-x-2 w-[250px]">
-          <Bookmark color="gray" size={30} />
-          <p className="text-amber-50 md:hidden lg:block lg:ml-5">Saved</p>
-        </div>
-        <div
-          className=" border-white/0 md:flex md:gap-1 border-2 hover:border-l-amber-300 hover:border-b-amber-300 rounded-[10px]  hover:bg-white/10 h-13 hover:pl-2.5 items-center cursor-pointer duration-500 hover:translate-x-2 w-[250px]"
-          onClick={() => navigate("/settigns")}
-        >
-          <Settings color="gray" size={30} />
-          <p className="text-amber-50 md:hidden lg:block lg:ml-5">Settings</p>
-        </div>
-      </main>
-    </div>
+
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = item.path && location.pathname === item.path;
+
+          return (
+            <button
+              key={item.label}
+              type="button"
+              aria-label={item.label}
+              onClick={() => item.path && navigate(item.path)}
+              className={`group flex h-12 w-full items-center justify-center gap-3 rounded-xl border px-2 text-left transition duration-500 hover:translate-x-2 lg:justify-start lg:px-3 ${
+                isActive
+                  ? "border-amber-200/30 bg-amber-300/15 text-amber-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                  : "border-transparent text-slate-400 hover:border-white/15 hover:bg-white/8 hover:text-white"
+              }`}
+            >
+              <Icon size={20} strokeWidth={isActive ? 2.2 : 1.8} />
+              <span className="hidden text-base font-medium lg:block">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
 export default LSidebar;

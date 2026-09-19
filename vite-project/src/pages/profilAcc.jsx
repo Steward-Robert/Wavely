@@ -5,12 +5,14 @@ import LSidebar from "../components/sidebar/leftSidbar";
 
 function ProfilAcc() {
   return (
-    <>
-      <Header />
+    <div className="min-h-screen overflow-x-hidden bg-[#08090e] text-white">
+      <div className="fixed inset-x-0 top-0 z-50">
+        <Header />
+      </div>
       <LSidebar />
       <Profil />
       <BMenu />
-    </>
+    </div>
   );
 }
 
