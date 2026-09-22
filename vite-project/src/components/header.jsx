@@ -1,6 +1,8 @@
 import { Bell, MessageCircle, Waves } from "lucide-react";
+import { useNavigate } from "react-router";
 
 function Header() {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08090e]/80 px-4 py-3 backdrop-blur-xl sm:px-6">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between">
@@ -33,7 +35,10 @@ function Header() {
           >
             <Bell size={19} strokeWidth={1.8} />
           </button>
-          <div className="h-10 w-10 rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1)]">
+          <div
+            className="h-10 w-10 rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1) cursor-pointer"
+            onClick={() => navigate("/account")}
+          >
             <img
               src="/1787604938678.png"
               alt="Wavely profile"

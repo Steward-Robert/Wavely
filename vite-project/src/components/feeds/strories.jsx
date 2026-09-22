@@ -42,6 +42,7 @@ function Stories() {
           <div
             key={story.id}
             className="group relative h-30 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/30 bg-white/10 shadow-xl shadow-black/20 backdrop-blur-md transition duration-300 hover:-translate-y-1  hover:bg-white/20 sm:h-30 sm:w-25 sm:rounded- md:h- md:w-25 md:rounded-sm"
+            onClick={() => console.log(story.name)}
           >
             {/* Image principale */}
             <img

@@ -9,6 +9,7 @@ import Post from "./pages/post.jsx";
 import Settings from "./pages/settings.jsx";
 import ProfilAcc from "./pages/profilAcc.jsx";
 import AboutWavely from "./pages/about.jsx";
+import ShowStories from "./components/feeds/showStories.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -29,13 +30,11 @@ function App() {
         <Route path="/feeds" element={<Feed />} />
         <Route path="/fr" element={<FriendsPage />} />
         <Route path="pst" element={<Post />} />
+        <Route path="/stories" element={<ShowStories />} />
         <Route
           path="settigns"
           element={
-            <Settings
-              isloading={isloading}
-              setIsLoading={setIsLoading}
-            />
+            <Settings isloading={isloading} setIsLoading={setIsLoading} />
           }
         />
         <Route path="account" element={<ProfilAcc />} />

@@ -1,6 +1,6 @@
-import { Plus, FileText, Heart, Users } from "lucide-react";
+import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 function Profil() {
   const stats = [
@@ -8,10 +8,15 @@ function Profil() {
     { label: "Posts", value: "5", icon: FileText },
     { label: "Likes", value: "120", icon: Heart },
   ];
+  const [newProfil, setNewProfil] = useState(null);
 
   const changeProfil = useRef(null);
   const handleChangeProfile = () => {
     changeProfil.current.click();
+  };
+
+  const handleImage = (e) => {
+    setNewProfil(e.target.files[0]);
   };
 
   return (
@@ -24,16 +29,18 @@ function Profil() {
           </p>
           <div className="relative mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
             <div className="relative h-28 w-28 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
-              <img
-                src="/0d75a22d7631a18a312d136e5f199b66.jpg"
-                alt="Robert Steward"
-                className="h-full w-full rounded-full object-cover"
-              />
+              {newProfil && (
+                <img
+                  src={URL.createObjectURL(newProfil)}
+                  className="h-full w-full rounded-full object-cover"
+                />
+              )}
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
                 ref={changeProfil}
+                onChange={handleImage}
               />
               <button
                 type="button"
@@ -41,7 +48,7 @@ function Profil() {
                 className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-lg transition hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-amber-200 cursor-pointer duration-700"
                 onClick={handleChangeProfile}
               >
-                <Plus
+                <Camera
                   size={24}
                   strokeWidth={2.2}
                   className="hover:rotate-360 duration-700"
