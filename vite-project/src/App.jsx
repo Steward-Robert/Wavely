@@ -10,6 +10,7 @@ import Settings from "./pages/settings.jsx";
 import ProfilAcc from "./pages/profilAcc.jsx";
 import AboutWavely from "./pages/about.jsx";
 import ShowStories from "./components/feeds/showStories.jsx";
+import ReportProblem from "./pages/reportProblem.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -39,6 +40,7 @@ function App() {
         />
         <Route path="account" element={<ProfilAcc />} />
         <Route path="about" element={<AboutWavely />} />
+        <Route path="/report" element={<ReportProblem />} />
       </Routes>
     </BrowserRouter>
   );

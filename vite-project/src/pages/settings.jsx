@@ -45,6 +45,7 @@ function Settings({ isloading, setIsLoading }) {
       label: "Report a problem",
       description: "Tell us when something is not working right",
       icon: TriangleAlert,
+      onClick: () => navigate("/report"),
       iconClassName: "text-amber-300",
     },
   ];
