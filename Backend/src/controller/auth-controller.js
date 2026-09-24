@@ -69,6 +69,32 @@ const logout = async (req, res) => {
   res.status(200).json({ message: "Logged out succesfully", status: "succes" });
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatars: {
+          select: { avatar: true },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { avatars, ...profile } = user;
+    return res.json({ ...profile, avatar: avatars.at(-1)?.avatar ?? null });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const deleteAccount = async (req, res) => {
   try {
     const id = req.user.id;
@@ -96,4 +122,4 @@ const deleteAccount = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, logout, deleteAccount };
+export { registerUser, loginUser, logout, getMe, deleteAccount };

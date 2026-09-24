@@ -34,6 +34,7 @@ function Settings({ isloading, setIsLoading }) {
       label: "Contact support",
       description: "Get help with your Wavely experience",
       icon: BadgeQuestionMark,
+      onClick: () => navigate("/contact-support"),
     },
     {
       label: "About Wavely",

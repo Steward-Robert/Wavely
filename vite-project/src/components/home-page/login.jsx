@@ -23,6 +23,9 @@ function Login({ setIsLogin }) {
           email: userEmail,
           password: userPassword,
         },
+        {
+          withCredentials: true,
+        },
       );
       navigate("/feeds");
       console.log(response.data);

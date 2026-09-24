@@ -1,6 +1,7 @@
 import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import axios from "axios";
 
 function Profil() {
   const stats = [
@@ -8,16 +9,53 @@ function Profil() {
     { label: "Posts", value: "5", icon: FileText },
     { label: "Likes", value: "120", icon: Heart },
   ];
-  const [newProfil, setNewProfil] = useState(null);
+
+  const [user, setUser] = useState(null);
 
   const changeProfil = useRef(null);
   const handleChangeProfile = () => {
     changeProfil.current.click();
   };
 
-  const handleImage = (e) => {
-    setNewProfil(e.target.files[0]);
+  const [loading, setLoading] = useState(false);
+
+  const handleAvatar = async (e) => {
+    setLoading(true);
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/upload",
+        formData,
+        {
+          withCredentials: true,
+        },
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    const myInfo = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/me", {
+          withCredentials: true,
+        });
+        setUser(response.data.user);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    myInfo();
+  }, []);
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-28 pt-24 sm:px-6 md:px-28 lg:pb-16 lg:pt-28 xl:px-36">
@@ -29,24 +67,24 @@ function Profil() {
           </p>
           <div className="relative mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
             <div className="relative h-28 w-28 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
-              {newProfil && (
-                <img
-                  src={URL.createObjectURL(newProfil)}
-                  className="h-full w-full rounded-full object-cover"
-                />
-              )}
+              <img
+                src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
+                className="h-full w-full rounded-full object-cover"
+              />
+
               <input
                 type="file"
                 accept="image/*"
                 className="hidden"
                 ref={changeProfil}
-                onChange={handleImage}
+                onChange={handleAvatar}
               />
               <button
                 type="button"
                 aria-label="Change profile photo"
                 className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-lg transition hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-amber-200 cursor-pointer duration-700"
                 onClick={handleChangeProfile}
+                disabled={loading}
               >
                 <Camera
                   size={24}
@@ -57,7 +95,7 @@ function Profil() {
             </div>
             <div className="text-center sm:text-left">
               <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                Robert Steward
+                {user ? user.name : "User"}
               </h1>
               <p className="mt-1 text-sm text-slate-400">@robertsteward</p>
               <p className="mt-3 max-w-sm text-sm leading-6 text-slate-300">
@@ -79,7 +117,7 @@ function Profil() {
             ))}
           </div>
         </section>
-        <PersonalInfo />
+        <PersonalInfo name={user.name} email={user.email} />
       </div>
     </main>
   );

@@ -1,7 +1,7 @@
 import { ChevronRight, Mail, Phone, User } from "lucide-react";
 import FriendList from "./friendList";
 
-function PersonalInfo() {
+function PersonalInfo({ name, email }) {
   return (
     <div className="px-5 py-7 sm:px-8 sm:py-9">
       <section>
@@ -22,12 +22,8 @@ function PersonalInfo() {
           </button>
         </div>
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/15">
-          <InfoRow icon={User} label="Name" value="Robert Steward" />
-          <InfoRow
-            icon={Mail}
-            label="Email address"
-            value="robertsteward@gmail.com"
-          />
+          <InfoRow icon={User} label="Name" value={name} />
+          <InfoRow icon={Mail} label="Email address" value={email} />
           <InfoRow
             icon={Phone}
             label="Phone number"
