@@ -1,8 +1,27 @@
 import { Bell, MessageCircle, Waves } from "lucide-react";
 import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 function Header() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/me", {
+          withCredentials: true,
+        });
+        setUser(response.data.user);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    loadUser();
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08090e]/80 px-4 py-3 backdrop-blur-xl sm:px-6">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between">
@@ -40,7 +59,7 @@ function Header() {
             onClick={() => navigate("/account")}
           >
             <img
-              src="/1787604938678.png"
+              src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
               alt="Wavely profile"
               className="h-full w-full rounded-full object-cover"
             />

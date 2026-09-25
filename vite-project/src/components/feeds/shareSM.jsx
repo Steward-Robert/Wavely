@@ -1,12 +1,30 @@
 import { Image, Video, SendHorizonal, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import axios from "axios";
 
 function ShareSM() {
   const [image, setImage] = useState([]);
   const [video, setVideo] = useState([]);
 
+  const [user, setUser] = useState(null);
+
   const inputImage = useRef(null);
   const inputVideo = useRef(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/api/me", {
+          withCredentials: true,
+        });
+        setUser(response.data.user);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    loadUser();
+  }, []);
 
   const addImageFiles = (e) => {
     const imageSelected = Array.from(e.target.files);
@@ -39,7 +57,7 @@ function ShareSM() {
       <div className="flex">
         <div className="h-12 w-12 border-white/80 border-1 rounded-full mx-3 ml-3">
           <img
-            src="1787604938678.png"
+            src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
             className="h-full w-full rounded-full object-cover"
           />
         </div>

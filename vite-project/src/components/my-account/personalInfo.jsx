@@ -22,8 +22,12 @@ function PersonalInfo({ name, email }) {
           </button>
         </div>
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/15">
-          <InfoRow icon={User} label="Name" value={name} />
-          <InfoRow icon={Mail} label="Email address" value={email} />
+          <InfoRow icon={User} label="Name" value={name ? name : "User"} />
+          <InfoRow
+            icon={Mail}
+            label="Email address"
+            value={email ? email : "user email"}
+          />
           <InfoRow
             icon={Phone}
             label="Phone number"

@@ -1,6 +1,8 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, Undo2 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 function AsideInfo() {
+  const navigate = useNavigate();
   return (
     <>
       <aside
@@ -15,11 +17,23 @@ function AsideInfo() {
               shadow-[0_20px_60px_rgba(0,0,0,0.18)]
               backdrop-blur-xl
               sm:p-6
+              mb-25
+              lg:mb-0
+
             "
       >
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/80">
-          Contact support
-        </p>
+        <div className="lg:relative lg:pt-5">
+          <button
+            onClick={() => navigate("/settigns")}
+            className=" h-11 w-11 items-center justify-center rounded-xl border  border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100 sm:absolute sm:top-2 sm:right-2 lg: hidden sm:block sm:pl-2"
+          >
+            <Undo2 color="gray" />
+          </button>
+
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/80">
+            Contact support
+          </p>
+        </div>
 
         <h2 className="mt-3 text-xl font-semibold text-white">
           We are here to listen

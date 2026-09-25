@@ -2,15 +2,45 @@ import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useRef, useState, useEffect } from "react";
 import axios from "axios";
+import Loader from "../loader";
+
+const optimizeImage = (file) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    const sourceUrl = URL.createObjectURL(file);
+
+    image.onload = () => {
+      const scale = Math.min(1, 1200 / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+      canvas
+        .getContext("2d")
+        .drawImage(image, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(sourceUrl);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Could not optimize image"));
+            return;
+          }
+          resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        0.82,
+      );
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(sourceUrl);
+      reject(new Error("Could not read image"));
+    };
+    image.src = sourceUrl;
+  });
 
 function Profil() {
-  const stats = [
-    { label: "Friends", value: "12", icon: Users },
-    { label: "Posts", value: "5", icon: FileText },
-    { label: "Likes", value: "120", icon: Heart },
-  ];
-
   const [user, setUser] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
 
   const changeProfil = useRef(null);
   const handleChangeProfile = () => {
@@ -18,16 +48,20 @@ function Profil() {
   };
 
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAvatar = async (e) => {
-    setLoading(true);
     const file = e.target.files[0];
     if (!file) return;
 
+    setLoading(true);
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
     const formData = new FormData();
-    formData.append("image", file);
 
     try {
+      const optimizedFile = await optimizeImage(file);
+      formData.append("image", optimizedFile);
       const response = await axios.post(
         "http://localhost:3000/api/upload",
         formData,
@@ -35,8 +69,17 @@ function Profil() {
           withCredentials: true,
         },
       );
+      setUser((currentUser) => ({
+        ...currentUser,
+        avatars: [...(currentUser?.avatars ?? []), response.data.avatar],
+      }));
+
+      setAvatarPreview(null);
+      URL.revokeObjectURL(previewUrl);
       console.log(response.data);
     } catch (error) {
+      setAvatarPreview(null);
+      URL.revokeObjectURL(previewUrl);
       console.error(error);
     } finally {
       setLoading(false);
@@ -45,6 +88,7 @@ function Profil() {
 
   useEffect(() => {
     const myInfo = async () => {
+      setIsLoading(true);
       try {
         const response = await axios.get("http://localhost:3000/api/me", {
           withCredentials: true,
@@ -52,14 +96,23 @@ function Profil() {
         setUser(response.data.user);
       } catch (error) {
         console.error(error);
+      } finally {
+        setIsLoading(false);
       }
     };
     myInfo();
   }, []);
 
+  const stats = [
+    { label: "Friends", value: 0, icon: Users },
+    { label: "Posts", value: 0, icon: FileText },
+    { label: "Likes", value: 0, icon: Heart },
+  ];
+
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-28 pt-24 sm:px-6 md:px-28 lg:pb-16 lg:pt-28 xl:px-36">
       <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl">
+        {isLoading && <Loader />}
         <section className="relative overflow-hidden border-b border-white/10 px-5 pb-7 pt-7 sm:px-8 sm:pb-9 sm:pt-9">
           <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-cyan-300/8 blur-3xl" />
           <p className="relative text-xs font-semibold uppercase tracking-[0.25em] text-amber-200/80">
@@ -68,7 +121,11 @@ function Profil() {
           <div className="relative mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
             <div className="relative h-28 w-28 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
               <img
-                src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
+                src={
+                  avatarPreview ??
+                  user?.avatars?.at(-1)?.avatar ??
+                  "/pfp ideas 🌑.jpg"
+                }
                 className="h-full w-full rounded-full object-cover"
               />
 
@@ -97,7 +154,11 @@ function Profil() {
               <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
                 {user ? user.name : "User"}
               </h1>
-              <p className="mt-1 text-sm text-slate-400">@robertsteward</p>
+              <p className="mt-1 text-sm text-slate-400">
+                {user
+                  ? "@" + user.name.trim().toLowerCase().replace(/\s+/g, "")
+                  : "user"}
+              </p>
               <p className="mt-3 max-w-sm text-sm leading-6 text-slate-300">
                 Sharing moments, meeting people, and staying close to my
                 community.
@@ -117,7 +178,10 @@ function Profil() {
             ))}
           </div>
         </section>
-        <PersonalInfo name={user.name} email={user.email} />
+        <PersonalInfo
+          name={user?.name || "Unknown"}
+          email={user?.email || "no email available"}
+        />
       </div>
     </main>
   );
