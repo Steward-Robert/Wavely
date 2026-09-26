@@ -6,6 +6,7 @@ function Support() {
     <div
       className="
             grid
+           
             grid-cols-1
             gap-5
             lg:grid-cols-[minmax(0,1fr)_minmax(250px,300px)]
@@ -13,7 +14,7 @@ function Support() {
             lg:gap-6
           "
     >
-      <main className="lg:block lg:w-[50vw]  lg:p-0 lg:mx-auto lg:mr-3.5 w-[90vw] mx-auto ">
+      <main className="lg:block lg:w-[50vw]  lg:p-0 lg:mx-auto lg:mr-3.5 w-[90vw] mx-auto  md:w-[70vw] ">
         <form className="w-full  rounded-[28px] border border-amber-200/30 bg-[#191919]/90 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:mt-4 p-4">
           <div className="mb-6">
             <h2 className="mt-2 text-2xl font-semibold text-amber-50 sm:text-3xl">

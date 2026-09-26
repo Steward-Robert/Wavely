@@ -1,32 +1,38 @@
-import peoples from "../../data/peoples.js";
 import Button from "../addFriendsbutton";
 
-function PeopleYouMK() {
+function PeopleYouMK({ allUser, searchTerm = "" }) {
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const matchingUsers = allUser.filter((user) =>
+    (user.name ?? "").toLowerCase().includes(normalizedSearch),
+  );
+
   return (
     <div>
-      {peoples.map((people) => {
+      {matchingUsers.map((users) => {
         return (
-          <>
-            <main
-              key={people.id}
-              className="flex justify-between items-center mb-4 hover:border-b-2 hover:border-amber-300 rounded-2xl hover:bg-white/10 h-13 duration-300 "
-            >
-              <div className="flex items-center gap-1">
-                <div className="h-10 w-10 rounded-full border-2 border-white/20 ml-3">
-                  <img
-                    src={people.img}
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                </div>
-                <h2 className="text-white ml-1">{people.name}</h2>
+          <main
+            key={users.id}
+            className="group flex min-h-[68px] items-center justify-between gap-3 border-b border-white/8 px-2 transition-colors last:border-b-0 hover:bg-white/[0.04]"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="h-11 w-11 shrink-0 rounded-full border border-white/15 bg-white/5 p-0.5">
+                <img
+                  src={users.avatars?.[0]?.avatar || "pfp ideas 🌑.jpg"}
+                  className="h-full w-full rounded-full object-cover"
+                />
               </div>
+              <h2 className="truncate text-sm font-medium text-white">{users.name}</h2>
+            </div>
 
-              <Button />
-            </main>
-            ;
-          </>
+            <Button />
+          </main>
         );
       })}
+      {matchingUsers.length === 0 && (
+        <p className="px-2 py-6 text-center text-sm text-slate-400">
+          {normalizedSearch ? "No matching people found." : "No people to show yet."}
+        </p>
+      )}
     </div>
   );
 }

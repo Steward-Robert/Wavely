@@ -17,7 +17,7 @@ function Report() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] w-full px-4 pb-24 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pb-20 lg:pt-14">
+    <main className="min-h-[calc(100vh-5rem)] w-full px-4 pb-24 pt-8 sm:px-6 sm:pt-10 lg:px-8 lg:pb-20 lg:pt-14 ">
       <div className="mx-auto w-full max-w-6xl">
         <div
           className="
@@ -47,7 +47,9 @@ function Report() {
               backdrop-blur-xl
               sm:p7
               md:p-8
-               
+               md:w-[70vw]
+               md:block
+               md:mx-auto
             "
           >
             <div className="mb-7 flex items-start justify-between gap-4 ">

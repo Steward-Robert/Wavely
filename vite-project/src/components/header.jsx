@@ -1,26 +1,15 @@
 import { Bell, MessageCircle, Waves } from "lucide-react";
+import { useContext } from "react";
 import { useNavigate } from "react-router";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import UserContext from "../context/UserContext.jsx";
 
 function Header() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/api/me", {
-          withCredentials: true,
-        });
-        setUser(response.data.user);
-      } catch {
-        setUser(null);
-      }
-    };
-
-    loadUser();
-  }, []);
+  const user = useContext(UserContext);
+  const avatarUrl =
+    user?.avatar?.avatar ??
+    user?.avatars?.at(-1)?.avatar ??
+    "/pfp ideas 🌑.jpg";
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08090e]/80 px-4 py-3 backdrop-blur-xl sm:px-6">
@@ -55,11 +44,11 @@ function Header() {
             <Bell size={19} strokeWidth={1.8} />
           </button>
           <div
-            className="h-10 w-10 rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1) cursor-pointer"
+            className="h-10 w-10 cursor-pointer rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1)]"
             onClick={() => navigate("/account")}
           >
             <img
-              src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
+              src={avatarUrl}
               alt="Wavely profile"
               className="h-full w-full rounded-full object-cover"
             />

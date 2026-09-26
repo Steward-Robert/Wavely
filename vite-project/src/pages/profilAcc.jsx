@@ -3,14 +3,14 @@ import Header from "../components/header";
 import Profil from "../components/my-account/profile";
 import LSidebar from "../components/sidebar/leftSidbar";
 
-function ProfilAcc() {
+function ProfilAcc({ user, setUser }) {
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#08090e] text-white">
       <div className="fixed inset-x-0 top-0 z-50">
         <Header />
       </div>
       <LSidebar />
-      <Profil />
+      <Profil user={user} setUser={setUser} />
       <BMenu />
     </div>
   );

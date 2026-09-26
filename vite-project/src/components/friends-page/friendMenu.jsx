@@ -1,36 +1,45 @@
+import { Send, UserPlus, UserRound, Users } from "lucide-react";
+
 function FriendMenu({ activeMenu, setActiveMenu }) {
   const menuItems = [
-    ["received", "Friend requests"],
-    ["sent", "Sent requests"],
-    ["friends", "My friends"],
-    ["people", "People you may know"],
+    { id: "received", label: "Requests", Icon: UserPlus },
+    { id: "sent", label: "Sent", Icon: Send },
+    { id: "friends", label: "My friends", Icon: Users },
+    { id: "people", label: "Discover", Icon: UserRound },
   ];
 
   return (
-    <div className="mt-5">
-      <p className="ml-6 mb-5 text-xl font-semibold tracking-tight text-white lg:fixed lg:right-7.5 lg:top-25 lg:text-2xl">
-        Connect with others
-      </p>
+    <section className="pt-1">
+      <div className="mb-6 border-b border-white/10 pb-5 sm:mb-7 sm:pb-6">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200/70">
+          Community
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          Connect with others
+        </h1>
+      </div>
 
-      <div className="mx-auto flex w-[350px] items-center justify-center rounded-2xl border border-white/10 bg-black/30 lg:fixed lg:right-1 lg:top-40 lg:w-[270px] lg:border-none lg:bg-transparent lg:py-3">
-        <div className="my-2.5 flex w-full flex-col gap-1.5 px-2 text-base">
-          {menuItems.map(([id, label]) => (
+      <nav
+        aria-label="Friend sections"
+        className="grid grid-cols-2 gap-1.5 rounded-2xl border border-white/15 bg-white/[0.07] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:grid-cols-4"
+      >
+          {menuItems.map(({ id, label, Icon }) => (
             <button
               key={id}
               type="button"
               onClick={() => setActiveMenu(id)}
-              className={`flex h-11 w-full items-center rounded-xl border pl-4 text-left transition duration-300 focus:outline-none  ${
+              className={`flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl border px-2 text-xs font-medium transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200/60 sm:text-sm sm:px-4 ${
                 activeMenu === id
-                  ? "border-amber-300/40 bg-amber-300/12 text-amber-100 shadow-[0_8px_24px_rgba(252,211,77,0.08)]"
-                  : "border-transparent text-slate-300 hover:border-white/10 hover:bg-white/8 hover:text-white"
+                  ? "border-amber-100/25 bg-amber-100/15 text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+                  : "border-transparent text-slate-300 hover:bg-white/10 hover:text-white"
               }`}
             >
+              <Icon size={16} strokeWidth={1.8} />
               {label}
             </button>
           ))}
-        </div>
-      </div>
-    </div>
+      </nav>
+    </section>
   );
 }
 

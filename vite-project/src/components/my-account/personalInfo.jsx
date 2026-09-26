@@ -28,11 +28,7 @@ function PersonalInfo({ name, email }) {
             label="Email address"
             value={email ? email : "user email"}
           />
-          <InfoRow
-            icon={Phone}
-            label="Phone number"
-            value="+(509) 4008 35 03"
-          />
+          <InfoRow icon={Phone} label="Phone number" value="No number yet" />
         </div>
       </section>
       <section className="mt-8">

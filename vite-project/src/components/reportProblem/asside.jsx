@@ -19,7 +19,10 @@ function AsideInfo() {
               sm:p-6
               mb-25
               lg:mb-0
-
+              md:w-[70vw]
+              md:block
+              md:mx-auto
+              lg:w-auto
             "
       >
         <div className="lg:relative lg:pt-5">

@@ -1,30 +1,12 @@
 import { Image, Video, SendHorizonal, X } from "lucide-react";
-import { useRef, useState, useEffect } from "react";
-import axios from "axios";
+import { useRef, useState } from "react";
 
-function ShareSM() {
+function ShareSM({ user }) {
   const [image, setImage] = useState([]);
   const [video, setVideo] = useState([]);
 
-  const [user, setUser] = useState(null);
-
   const inputImage = useRef(null);
   const inputVideo = useRef(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/api/me", {
-          withCredentials: true,
-        });
-        setUser(response.data.user);
-      } catch {
-        setUser(null);
-      }
-    };
-
-    loadUser();
-  }, []);
 
   const addImageFiles = (e) => {
     const imageSelected = Array.from(e.target.files);

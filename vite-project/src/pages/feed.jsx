@@ -6,14 +6,14 @@ import ShareSM from "../components/feeds/shareSM.jsx";
 import Stories from "../components/feeds/strories.jsx";
 import RSidebar from "../components/sidebar/rightSidebar.jsx";
 
-function Feed() {
+function Feed({ user, alluser }) {
   return (
     <>
-      <Header />
-      <RSidebar />
+      <Header user={user} />
+      <RSidebar alluser={alluser} />
       <LSidebar />
       <Stories />
-      <ShareSM />
+      <ShareSM user={user} />
       <Foryou />
       <BMenu />
     </>

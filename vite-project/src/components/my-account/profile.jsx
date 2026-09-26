@@ -1,8 +1,7 @@
 import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
-import Loader from "../loader";
 
 const optimizeImage = (file) =>
   new Promise((resolve, reject) => {
@@ -38,8 +37,7 @@ const optimizeImage = (file) =>
     image.src = sourceUrl;
   });
 
-function Profil() {
-  const [user, setUser] = useState(null);
+function Profil({ user, setUser }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
 
   const changeProfil = useRef(null);
@@ -48,7 +46,6 @@ function Profil() {
   };
 
   const [loading, setLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleAvatar = async (e) => {
     const file = e.target.files[0];
@@ -86,23 +83,6 @@ function Profil() {
     }
   };
 
-  useEffect(() => {
-    const myInfo = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get("http://localhost:3000/api/me", {
-          withCredentials: true,
-        });
-        setUser(response.data.user);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    myInfo();
-  }, []);
-
   const stats = [
     { label: "Friends", value: 0, icon: Users },
     { label: "Posts", value: 0, icon: FileText },
@@ -112,7 +92,6 @@ function Profil() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-28 pt-24 sm:px-6 md:px-28 lg:pb-16 lg:pt-28 xl:px-36">
       <div className="mx-auto max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-white/6 shadow-[0_24px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-        {isLoading && <Loader />}
         <section className="relative overflow-hidden border-b border-white/10 px-5 pb-7 pt-7 sm:px-8 sm:pb-9 sm:pt-9">
           <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-cyan-300/8 blur-3xl" />
           <p className="relative text-xs font-semibold uppercase tracking-[0.25em] text-amber-200/80">
