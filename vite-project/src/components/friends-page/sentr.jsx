@@ -1,6 +1,6 @@
 import sent from "../../data/sentRE.js";
+import FriendB from "../button/friendButton.jsx";
 import SentRB from "../button/sentRButton.jsx";
-import { EllipsisVertical } from "lucide-react";
 
 function SentR({ searchTerm = "" }) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -23,15 +23,14 @@ function SentR({ searchTerm = "" }) {
                   className="h-full w-full rounded-full object-cover"
                 />
               </div>
-              <h2 className="truncate text-sm font-medium text-white">{sent.name}</h2>
+              <h2 className="truncate text-sm font-medium text-white">
+                {sent.name}
+              </h2>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
               <p className="text-xs text-white/55 sm:text-sm">{sent.status}</p>
               {sent.status == "Accepted" ? (
-                <EllipsisVertical
-                  color="white"
-                  className="cursor-pointer mr-5"
-                />
+                <FriendB usersId={sent.id} />
               ) : (
                 <SentRB />
               )}
@@ -41,7 +40,9 @@ function SentR({ searchTerm = "" }) {
       })}
       {matchingRequests.length === 0 && (
         <p className="px-2 py-6 text-center text-sm text-slate-400">
-          {normalizedSearch ? "No matching requests found." : "No sent requests yet."}
+          {normalizedSearch
+            ? "No matching requests found."
+            : "No sent requests yet."}
         </p>
       )}
     </div>

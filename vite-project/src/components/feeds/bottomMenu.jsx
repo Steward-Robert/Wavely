@@ -1,5 +1,7 @@
 import { Bookmark, Home, Plus, Settings, Users } from "lucide-react";
+import { useContext } from "react";
 import { useLocation, useNavigate } from "react-router";
+import UserContext from "../../context/UserContext.jsx";
 
 const menuItems = [
   { label: "Home", path: "/feeds", icon: Home },
@@ -11,6 +13,8 @@ const menuItems = [
 function BMenu() {
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useContext(UserContext);
+  const visibleMenuItems = menuItems;
 
   return (
     <nav
@@ -18,7 +22,7 @@ function BMenu() {
       className="fixed inset-x-3 bottom-1 z-50 rounded-2xl border border-white/10 bg-[#08090e]/90 p-2 shadow-[0_16px_45px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:inset-x-6 md:hidden lg:hidden"
     >
       <div className="grid grid-cols-5 items-end gap-1">
-        {menuItems.slice(0, 2).map((item) => {
+        {visibleMenuItems.slice(0, 2).map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
 
@@ -49,7 +53,7 @@ function BMenu() {
           <Plus size={27} strokeWidth={2.2} />
         </button>
 
-        {menuItems.slice(2).map((item) => {
+        {visibleMenuItems.slice(2).map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
 
@@ -58,6 +62,7 @@ function BMenu() {
               key={item.label}
               type="button"
               aria-label={item.label}
+              title={item.label}
               onClick={() => item.path && navigate(item.path)}
               className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[10px] font-medium transition focus:outline-none focus:ring-2 focus:ring-amber-300/50 ${
                 isActive

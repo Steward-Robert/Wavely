@@ -4,7 +4,7 @@ import axios from "axios";
 import Loader from "../loader";
 import { useNavigate } from "react-router";
 
-function Register({ setIsLogin }) {
+function Register({ setIsLogin, onAuthenticated }) {
   const navigate = useNavigate();
 
   const [isClosed, setIsClosed] = useState(true);
@@ -30,6 +30,7 @@ function Register({ setIsLogin }) {
           withCredentials: true,
         },
       );
+      onAuthenticated();
       navigate("/feeds");
       console.log(response.data);
     } catch (error) {

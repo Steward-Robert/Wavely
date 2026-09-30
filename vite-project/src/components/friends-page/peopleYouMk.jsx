@@ -21,16 +21,20 @@ function PeopleYouMK({ allUser, searchTerm = "" }) {
                   className="h-full w-full rounded-full object-cover"
                 />
               </div>
-              <h2 className="truncate text-sm font-medium text-white">{users.name}</h2>
+              <h2 className="truncate text-sm font-medium text-white">
+                {users.name}
+              </h2>
             </div>
 
-            <Button />
+            <Button usersId={users.id} />
           </main>
         );
       })}
       {matchingUsers.length === 0 && (
         <p className="px-2 py-6 text-center text-sm text-slate-400">
-          {normalizedSearch ? "No matching people found." : "No people to show yet."}
+          {normalizedSearch
+            ? "No matching people found."
+            : "No people to show yet."}
         </p>
       )}
     </div>

@@ -10,14 +10,17 @@ import {
   InfoIcon,
   TriangleAlert,
   ChevronRight,
+  ShieldCheck,
   SlidersHorizontal,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 import { useNavigate } from "react-router";
+import UserContext from "../context/UserContext.jsx";
 
 function Settings({ isloading, setIsLoading }) {
   const navigate = useNavigate();
+  const user = useContext(UserContext);
   const [popupOpen, setPopupOpen] = useState(false);
 
   const accountItems = [
@@ -27,6 +30,18 @@ function Settings({ isloading, setIsLoading }) {
       icon: UserRound,
       onClick: () => navigate("/account"),
     },
+    ...(user?.role === "ADMIN"
+      ? [
+          {
+            label: "Admin dashboard",
+            description: "Manage users, content, and reports",
+            icon: ShieldCheck,
+            iconClassName: "text-cyan-200",
+            className: "sm:hidden",
+            onClick: () => navigate("/admin"),
+          },
+        ]
+      : []),
   ];
 
   const helpItems = [
@@ -58,7 +73,7 @@ function Settings({ isloading, setIsLoading }) {
       <button
         type="button"
         onClick={item.onClick}
-        className="group flex w-full items-center gap-3 border-b border-white/8 px-4 py-4 text-left transition last:border-b-0 hover:bg-white/6 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-200/50 sm:px-5"
+        className={`group flex w-full items-center gap-3 border-b border-white/8 px-4 py-4 text-left transition last:border-b-0 hover:bg-white/6 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-200/50 sm:px-5 ${item.className || ""}`}
       >
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/6 text-slate-300 transition group-hover:border-cyan-200/25 group-hover:bg-cyan-300/10 group-hover:text-cyan-100">
           <Icon size={20} strokeWidth={1.8} className={item.iconClassName} />

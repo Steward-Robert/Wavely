@@ -1,11 +1,12 @@
-import { Check, X, EllipsisVertical } from "lucide-react";
+import { Check, X } from "lucide-react";
+import FriendB from "./friendButton";
 
-function FriendRB() {
+function FriendRB({ usersId }) {
   return (
     <div className="flex gap-7">
       <Check color="white" className="cursor-pointer" />
       <X color="white" className="cursor-pointer" />
-      <EllipsisVertical color="white" className="cursor-pointer" />
+      <FriendB usersId={usersId} />
     </div>
   );
 }

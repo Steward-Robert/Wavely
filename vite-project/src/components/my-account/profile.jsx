@@ -2,6 +2,7 @@ import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useRef, useState } from "react";
 import axios from "axios";
+import VerifiedBadge from "../VerifiedBadge.jsx";
 
 const optimizeImage = (file) =>
   new Promise((resolve, reject) => {
@@ -130,9 +131,12 @@ function Profil({ user, setUser }) {
               </button>
             </div>
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-                {user ? user.name : "User"}
-              </h1>
+              <div className="flex items-center justify-center gap-2 sm:justify-start">
+                <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                  {user ? user.name : "User"}
+                </h1>
+                {user?.role === "ADMIN" && <VerifiedBadge />}
+              </div>
               <p className="mt-1 text-sm text-slate-400">
                 {user
                   ? "@" + user.name.trim().toLowerCase().replace(/\s+/g, "")

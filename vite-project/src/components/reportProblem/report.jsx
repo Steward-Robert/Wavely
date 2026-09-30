@@ -1,15 +1,35 @@
 import { ArrowRight, CheckCircle2, Mail, Upload } from "lucide-react";
 import AsideInfo from "./asside";
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
+import UserContext from "../../context/UserContext.jsx";
+import api from "../../services/api.js";
 
 function Report() {
+  const user = useContext(UserContext);
   const screenshot = useRef(null);
   const [fileName, setFileName] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    setSubmitted(true);
+    const form = event.currentTarget;
+    setSubmitting(true);
+    setSubmitted(false);
+    setSubmitError("");
+    try {
+      await api.post("/reports", new FormData(form));
+      setSubmitted(true);
+      form.reset();
+      setFileName("");
+    } catch (error) {
+      setSubmitError(
+        error.response?.data?.message || "Unable to send your report.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleFileChange = (event) => {
@@ -72,31 +92,21 @@ function Report() {
               {/* EMAIL */}
               <div>
                 <label
-                  htmlFor="email"
+                  htmlFor="reporter"
                   className="text-sm font-medium text-slate-200"
                 >
-                  Email address
+                  Reporting as
                 </label>
 
                 <div className="mt-2 flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-black/20 px-3 transition focus-within:border-cyan-200/50 focus-within:ring-2 focus-within:ring-cyan-200/10">
                   <Mail size={18} className="shrink-0 text-slate-500" />
 
-                  <input
-                    id="email"
-                    required
-                    type="email"
-                    placeholder="you@example.com"
-                    className="
-                      min-w-0
-                      flex-1
-                      bg-transparent
-                      py-3
-                      text-sm
-                      text-white
-                      outline-none
-                      placeholder:text-slate-600
-                    "
-                  />
+                  <p
+                    id="reporter"
+                    className="min-w-0 flex-1 truncate py-3 text-sm text-slate-300"
+                  >
+                    {user?.email || "Your signed-in account"}
+                  </p>
                 </div>
               </div>
 
@@ -111,7 +121,7 @@ function Report() {
 
                 <select
                   required
-                  name="issue"
+                  name="type"
                   id="issue"
                   defaultValue=""
                   className="
@@ -170,12 +180,13 @@ function Report() {
 
                 <textarea
                   id="details"
+                  name="reason"
                   required
                   rows={5}
                   placeholder="Describe what happened, where it happened, and what you expected to see."
                   className="
                     mt-2
-                    min-h-[130px]
+                    min-h-32.5
                     w-full
                     max-w-full
                     resize-y
@@ -210,7 +221,7 @@ function Report() {
                   className="
                     mt-2
                     flex
-                    min-h-[130px]
+                    min-h-32.5
                     w-full
                     flex-col
                     items-center
@@ -245,7 +256,8 @@ function Report() {
                 <input
                   ref={screenshot}
                   type="file"
-                  accept="image/*,.pdf"
+                  name="attachment"
+                  accept="image/png,image/jpeg,.png,.jpg,.jpeg,.pdf,application/pdf"
                   onChange={handleFileChange}
                   className="sr-only"
                 />
@@ -262,9 +274,19 @@ function Report() {
                 </div>
               )}
 
+              {submitError && (
+                <p
+                  role="alert"
+                  className="rounded-xl border border-rose-300/20 bg-rose-300/8 p-3 text-sm text-rose-100"
+                >
+                  {submitError}
+                </p>
+              )}
+
               {/* SUBMIT */}
               <button
                 type="submit"
+                disabled={submitting}
                 className="
                   flex
                   w-full
@@ -288,7 +310,7 @@ function Report() {
                   focus:ring-offset-[#11131b]
                 "
               >
-                Submit report
+                {submitting ? "Sending report..." : "Submit report"}
                 <ArrowRight size={17} />
               </button>
             </form>

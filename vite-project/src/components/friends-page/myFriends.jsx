@@ -1,7 +1,7 @@
 import MyF from "./myF.jsx";
 import { useState } from "react";
 
-function MyFriends() {
+function MyFriends({ setUserInfo }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
@@ -18,7 +18,7 @@ function MyFriends() {
         className="mb-4 h-11 w-full rounded-xl border border-white/15 bg-black/25 px-4 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] outline-none backdrop-blur-xl transition placeholder:text-slate-400 focus:border-amber-100/45 focus:ring-2 focus:ring-amber-100/10"
       />
       <div className="divide-y divide-white/8">
-        <MyF searchTerm={searchTerm} />
+        <MyF searchTerm={searchTerm} setUserInfo={setUserInfo} />
       </div>
     </section>
   );

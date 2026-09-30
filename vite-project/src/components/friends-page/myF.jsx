@@ -2,7 +2,7 @@ import myfriends from "../../data/myFriends";
 
 import FriendB from "../button/friendButton";
 
-function MyF({ searchTerm = "" }) {
+function MyF({ searchTerm = "", setUserInfo }) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const matchingFriends = myfriends.filter((friend) =>
     friend.name.toLowerCase().includes(normalizedSearch),
@@ -23,16 +23,20 @@ function MyF({ searchTerm = "" }) {
                   className="h-full w-full rounded-full object-cover"
                 />
               </div>
-              <h2 className="truncate text-sm font-medium text-white">{myFriend.name}</h2>
+              <h2 className="truncate text-sm font-medium text-white">
+                {myFriend.name}
+              </h2>
             </div>
 
-            <FriendB />
+            <FriendB setUserInfo={setUserInfo} usersId={myFriend.id} />
           </main>
         );
       })}
       {matchingFriends.length === 0 && (
         <p className="px-2 py-6 text-center text-sm text-slate-400">
-          {normalizedSearch ? "No matching friends found." : "No friends to show yet."}
+          {normalizedSearch
+            ? "No matching friends found."
+            : "No friends to show yet."}
         </p>
       )}
     </div>

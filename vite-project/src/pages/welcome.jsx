@@ -3,7 +3,7 @@ import "../styles/welcome.css";
 import Login from "../components/home-page/login.jsx";
 import { useState } from "react";
 
-function Welcome() {
+function Welcome({ onAuthenticated }) {
   const [isLogin, setIsLogin] = useState(false);
   return (
     <div
@@ -59,9 +59,15 @@ function Welcome() {
           "
         >
           {isLogin ? (
-            <Login setIsLogin={setIsLogin} />
+            <Login
+              setIsLogin={setIsLogin}
+              onAuthenticated={onAuthenticated}
+            />
           ) : (
-            <Register setIsLogin={setIsLogin} />
+            <Register
+              setIsLogin={setIsLogin}
+              onAuthenticated={onAuthenticated}
+            />
           )}
         </div>
       </div>

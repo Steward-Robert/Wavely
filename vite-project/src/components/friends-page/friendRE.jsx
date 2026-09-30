@@ -23,16 +23,20 @@ function FQ({ searchTerm = "" }) {
                   className="h-full w-full rounded-full object-cover"
                 />
               </div>
-              <h2 className="truncate text-sm font-medium text-white">{re.name}</h2>
+              <h2 className="truncate text-sm font-medium text-white">
+                {re.name}
+              </h2>
             </div>
 
-            <FriendRB />
+            <FriendRB usersId={re.id} />
           </main>
         );
       })}
       {matchingRequests.length === 0 && (
         <p className="px-2 py-6 text-center text-sm text-slate-400">
-          {normalizedSearch ? "No matching requests found." : "No friend requests yet."}
+          {normalizedSearch
+            ? "No matching requests found."
+            : "No friend requests yet."}
         </p>
       )}
     </div>
