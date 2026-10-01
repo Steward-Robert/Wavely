@@ -61,10 +61,12 @@ function Report() {
               lg:block
               lg:mx-auto
               lg:mr-6
-              bg-white/6
+              border border-white/10
+              bg-[#05070b]/90
               p-5
-              shadow-[0_24px_70px_rgba(0,0,0,0.22)]
-              backdrop-blur-xl
+              shadow-[0_24px_70px_rgba(0,0,0,0.35)]
+              backdrop-blur-xl backdrop-saturate-150
+              bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)]
               sm:p7
               md:p-8
                md:w-[70vw]

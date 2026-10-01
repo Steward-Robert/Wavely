@@ -47,3 +47,25 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+.story-scrollbar {
+  -ms-overflow-style: auto;
+  scrollbar-width: thin;
+}
+
+.story-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.story-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.story-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.32);
+  border-radius: 9999px;
+}
+
+.story-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

@@ -59,10 +59,7 @@ function Welcome({ onAuthenticated }) {
           "
         >
           {isLogin ? (
-            <Login
-              setIsLogin={setIsLogin}
-              onAuthenticated={onAuthenticated}
-            />
+            <Login setIsLogin={setIsLogin} onAuthenticated={onAuthenticated} />
           ) : (
             <Register
               setIsLogin={setIsLogin}

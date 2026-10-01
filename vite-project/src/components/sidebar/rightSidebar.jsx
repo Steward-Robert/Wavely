@@ -18,8 +18,8 @@ function RSidebar({ alluser }) {
 
   return (
     <aside className="fixed right-3 top-24 z-40 hidden h-[calc(100vh-8rem)] w-64 overflow-y-auto scrollbar-none lg:top-28 lg:block xl:w-72">
-      <div className="rounded-2xl border border-white/15 bg-white/5 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
-        <header className="sticky top-0 z-30 -mx-1 mb-3 border-b border-white/10 bg-black/20 px-1 pb-4 pt-1 backdrop-blur-xl">
+      <div className="rounded-2xl border border-white/10 bg-[#05070b]/90 p-3 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <header className="sticky top-0 z-30 -mx-1 mb-3 border-b border-white/10 bg-[#0a0d12]/90 px-1 pb-4 pt-1 backdrop-blur-xl">
           <div className="mb-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70">
               Discover

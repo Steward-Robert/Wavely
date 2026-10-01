@@ -35,19 +35,20 @@ function ShareSM({ user }) {
   };
 
   return (
-    <div className=" mx-2 mt-10 w-[80vw] mx-auto block overflow-hidden rounded-3xl border border-white/20 bg-white/[0.08] p-2 shadow-2xl shadow-black/20 backdrop-blur-xs backdrop-saturate-150 sm:p-5 md:w-xl md:block md:mx-auto sm:w-[80vw] sm:block sm:mx-auto">
-      <div className="flex">
-        <div className="h-12 w-12 border-white/80 border-1 rounded-full mx-3 ml-3">
+    <div className="mx-2 mt-10 w-[80vw] mx-auto block overflow-hidden rounded-[30px] border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)] sm:p-5 md:w-xl md:block md:mx-auto sm:w-[80vw] sm:block sm:mx-auto lg:w-[45vw]">
+      <div className="flex items-center gap-1 rounded-2xl border border-white/5 bg-white/[0.02] px-2 py-2">
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/20 bg-white/10 shadow-lg shadow-black/20">
           <img
             src={user?.avatars?.at(-1)?.avatar ?? "/pfp ideas 🌑.jpg"}
-            className="h-full w-full rounded-full object-cover"
+            alt="profile"
+            className="h-full w-full rounded-full object-cover object-center"
           />
         </div>
         <input
           readOnly
           type="text"
           placeholder="Share something special"
-          className="border-none outline-none w-50 text-amber-50 overflow-auto"
+          className="w-full border-none bg-transparent text-base text-amber-50 placeholder:text-gray-400 outline-none"
         />
       </div>
 
@@ -72,7 +73,7 @@ function ShareSM({ user }) {
       <textarea
         placeholder="Tell us everything..."
         maxLength={180}
-        className="text-amber-50 mt-9 w-[70vw] focus:outline-none border-b border-white/20 mx-auto block h-20 scrollbar-none"
+        className="mt-9 h-20 w-[70vw] mx-auto block resize-none rounded-2xl border border-white/10 bg-white/[0.02] px-3 py-3 text-amber-50 placeholder:text-gray-400 focus:outline-none scrollbar-none"
       ></textarea>
 
       {(image.length > 0 || video.length > 0) && (
@@ -121,26 +122,29 @@ function ShareSM({ user }) {
         </div>
       )}
 
-      <div className="flex gap-2.5 mt-6 justify-between">
-        <div className="flex gap-4">
+      <div className="mt-6 flex justify-between gap-2.5">
+        <div className="flex gap-3">
           <button
             onClick={handleImages}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
           >
-            <Image className="cursor-pointer" color="White" />
+            <Image className="cursor-pointer" size={18} color="currentColor" />
           </button>
 
           <button
             onClick={handleVideos}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
           >
-            <Video className="cursor-pointer" color="White" />
+            <Video className="cursor-pointer" size={18} color="currentColor" />
           </button>
         </div>
-        <SendHorizonal
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-green-500 hover:bg-green-950 hover:text-amber-100"
-          color="gray"
-        />
+
+        <button
+          type="button"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-300/20 bg-emerald-400/10 text-emerald-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-300/40 hover:bg-emerald-400/15 hover:text-emerald-100"
+        >
+          <SendHorizonal size={18} color="currentColor" />
+        </button>
       </div>
     </div>
   );

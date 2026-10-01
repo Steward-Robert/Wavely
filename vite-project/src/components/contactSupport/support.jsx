@@ -15,7 +15,7 @@ function Support() {
           "
     >
       <main className="lg:block lg:w-[50vw]  lg:p-0 lg:mx-auto lg:mr-3.5 w-[90vw] mx-auto  md:w-[70vw] ">
-        <form className="w-full  rounded-[28px] border border-amber-200/30 bg-[#191919]/90 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur-sm sm:p-6 lg:mt-4 p-4">
+        <form className="w-full rounded-[28px] border border-white/10 bg-[#05070b]/90 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] sm:p-6 lg:mt-4 p-4">
           <div className="mb-6">
             <h2 className="mt-2 text-2xl font-semibold text-amber-50 sm:text-3xl">
               Contact support
@@ -35,7 +35,7 @@ function Support() {
                 required
                 id="username"
                 placeholder="Enter your full name"
-                className="w-full rounded-2xl border border-amber-100/15 bg-[#2a2a2a] px-4 py-3 text-sm text-amber-50 placeholder:text-amber-100/45 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/30"
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-amber-50 placeholder:text-slate-400 outline-none transition focus:border-amber-300/50 focus:ring-2 focus:ring-amber-300/20"
               />
             </div>
 
@@ -51,7 +51,7 @@ function Support() {
                 id="email"
                 required
                 placeholder="Enter your email address"
-                className="w-full rounded-2xl border border-amber-100/15 bg-[#2a2a2a] px-4 py-3 text-sm text-amber-50 placeholder:text-amber-100/45 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/30"
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-amber-50 placeholder:text-slate-400 outline-none transition focus:border-amber-300/50 focus:ring-2 focus:ring-amber-300/20"
               />
             </div>
 
@@ -67,7 +67,7 @@ function Support() {
                 min={8}
                 id="number"
                 placeholder="Enter your phone number"
-                className="w-full rounded-2xl border border-amber-100/15 bg-[#2a2a2a] px-4 py-3 text-sm text-amber-50 placeholder:text-amber-100/45 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/30"
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-amber-50 placeholder:text-slate-400 outline-none transition focus:border-amber-300/50 focus:ring-2 focus:ring-amber-300/20"
               />
             </div>
 
@@ -82,7 +82,7 @@ function Support() {
                 id="explain"
                 rows="5"
                 placeholder="Write your message here"
-                className="w-full resize-none rounded-2xl border border-amber-100/15 bg-[#2a2a2a] px-4 py-3 text-sm text-amber-50 placeholder:text-amber-100/45 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-300/30"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-amber-50 placeholder:text-slate-400 outline-none transition focus:border-amber-300/50 focus:ring-2 focus:ring-amber-300/20"
               ></textarea>
             </div>
           </div>

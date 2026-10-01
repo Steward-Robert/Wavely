@@ -10,7 +10,7 @@ function FriendMenu({ activeMenu, setActiveMenu }) {
 
   return (
     <section className="pt-1">
-      <div className="mb-6 border-b border-white/10 pb-5 sm:mb-7 sm:pb-6">
+      <div className="mb-6 border-b border-white/10 pb-5 sm:mb-7 sm:pb-6 lg:w-[50vw] lg:block lg:mx-auto">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200/70">
           Community
         </p>
@@ -21,7 +21,7 @@ function FriendMenu({ activeMenu, setActiveMenu }) {
 
       <nav
         aria-label="Friend sections"
-        className="grid grid-cols-2 gap-1.5 rounded-2xl border border-white/15 bg-white/[0.07] p-2 shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:grid-cols-4"
+        className="grid grid-cols-2 gap-1.5 rounded-2xl border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 sm:grid-cols-4 lg:w-[60vw]  lg:mx-auto"
       >
         {menuItems.map(({ id, label, Icon }) => (
           <button

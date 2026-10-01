@@ -12,10 +12,11 @@ function AsideInfo() {
               rounded-2xl
               border
               border-white/10
-              bg-white/6
+              bg-[#05070b]/90
               p-5
-              shadow-[0_20px_60px_rgba(0,0,0,0.18)]
-              backdrop-blur-xl
+              shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+              backdrop-blur-xl backdrop-saturate-150
+              bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)]
               sm:p-6
               mb-25
               lg:mb-0
@@ -25,12 +26,13 @@ function AsideInfo() {
               lg:w-auto
             "
       >
-        <div className="lg:relative lg:pt-5">
+        <div className="relative mb-4 lg:pt-5">
           <button
             onClick={() => navigate("/settigns")}
-            className=" h-11 w-11 items-center justify-center rounded-xl border  border-white/15 bg-white/5 text-slate-300 transition hover:-translate-y-0.5 hover:border-amber-200/45 hover:bg-white/10 hover:text-amber-100 sm:absolute sm:top-2 sm:right-2 lg: hidden sm:block sm:pl-2"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100 sm:absolute sm:right-0 sm:top-0"
+            aria-label="Go back"
           >
-            <Undo2 color="gray" />
+            <Undo2 size={18} className="text-current" />
           </button>
 
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/80">

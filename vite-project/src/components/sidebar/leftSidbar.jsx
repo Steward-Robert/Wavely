@@ -32,7 +32,7 @@ function LSidebar() {
 
   return (
     <aside className="fixed left-3 top-24 z-50 hidden md:block lg:top-28">
-      <nav className="flex w-16 flex-col gap-4 rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/20 backdrop-blur-xl lg:w-60">
+      <nav className="flex w-16 flex-col gap-4 rounded-2xl border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl lg:w-60">
         <div className="mb-2 border-b border-white/10 px-2 pb-3 lg:px-3">
           <p className="hidden text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-100/65 lg:block">
             Navigate

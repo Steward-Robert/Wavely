@@ -62,7 +62,11 @@ function AdminUsers({
                     <td className="px-5 py-4">
                       <div className="flex max-w-72 items-center gap-3">
                         <img
-                          src={user.avatar?.avatar || user.avatars?.[0]?.avatar || "/pfp ideas 🌑.jpg"}
+                          src={
+                            user.avatar?.avatar ||
+                            user.avatars?.[0]?.avatar ||
+                            "/pfp ideas 🌑.jpg"
+                          }
                           alt={`${user.name} profile`}
                           className="h-10 w-10 rounded-full object-cover ring-1 ring-white/10"
                         />
@@ -71,7 +75,9 @@ function AdminUsers({
                             <p className="truncate text-sm font-medium text-white">
                               {user.name}
                             </p>
-                            {user.role === "ADMIN" && <VerifiedBadge className="h-5 w-5" />}
+                            {user.role === "ADMIN" && (
+                              <VerifiedBadge className="h-5 w-5" />
+                            )}
                           </div>
                           <p className="mt-1 truncate text-xs text-slate-500">
                             {user.email}

@@ -1,137 +1,66 @@
-import { useState } from "react";
-import {
-  Bookmark,
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Send,
-} from "lucide-react";
-
-const posts = [
-  {
-    id: 1,
-    name: "Maya Chen",
-    username: "@maya.chen",
-    time: "18 min ago",
-    avatar: "1787604938678.png",
-    text: "Small moments can make the loudest memories. What is bringing you joy today?",
-    image: "1787604938678.png",
-    likes: 248,
-    comments: 24,
-  },
-  {
-    id: 2,
-    name: "Robert Miles",
-    username: "@robertmiles",
-    time: "1 hr ago",
-    avatar: "1787604938678.png",
-    text: "A fresh week, a clear mind, and a little more time outside.",
-    likes: 96,
-    comments: 8,
-  },
-];
+import { Heart, Bookmark, MessageCircle, EllipsisVertical } from "lucide-react";
 
 function Foryou() {
-  const [likedPosts, setLikedPosts] = useState([]);
-  const [savedPosts, setSavedPosts] = useState([]);
-
-  const togglePost = (setter, postId) => {
-    setter((current) =>
-      current.includes(postId)
-        ? current.filter((id) => id !== postId)
-        : [...current, postId],
-    );
-  };
-
   return (
-    <section className=" mt-8 pb-8 sm:mt-10 md:w-xl md:block md:mx-auto sm: w-[80vw] sm:block sm:mx-auto mx-auto">
-      <div className="mb-4 flex items-center justify-between px-1">
-        <h2 className="text-2xl font-semibold tracking-wide text-white drop-shadow-md">
-          For you
-        </h2>
-        <button className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-white/75 backdrop-blur-md transition hover:bg-white/20">
-          Latest
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        {posts.map((post) => {
-          const isLiked = likedPosts.includes(post.id);
-          const isSaved = savedPosts.includes(post.id);
-
-          return (
-            <article
-              key={post.id}
-              className="overflow-hidden rounded-3xl border border-white/20 bg-white/[0.08] p-4 shadow-2xl shadow-black/20 backdrop-blur-2xl backdrop-saturate-150 sm:p-5"
-            >
-              <header className="flex items-center gap-3">
+    <>
+      <main className="h-auto mb-52 w-[80vw] mx-auto mt-20 block sm:block sm:mx-auto md:w-[70vw] md:block md:mx-auto lg:w-[45vw]">
+        <article className="overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)]">
+          <header className="flex items-center gap-4 text-amber-50 justify-between">
+            <div className="flex gap-2">
+              <div className="h-[50px] w-[50px] overflow-hidden rounded-full border border-white/15 bg-white/10 shadow-lg shadow-black/20">
                 <img
-                  src={post.avatar}
-                  alt={post.name}
-                  className="h-11 w-11 rounded-full border border-white/30 object-cover"
+                  src="/pfp ideas 🌑.jpg"
+                  alt="Robert Steward"
+                  className="h-full w-full object-cover"
                 />
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-semibold text-white">
-                    {post.name}
-                  </h3>
-                  <p className="text-xs text-white/55">
-                    {post.username} · {post.time}
-                  </p>
-                </div>
-                <button
-                  aria-label={`More options for ${post.name}`}
-                  className="rounded-full p-2 text-white/65 transition hover:bg-white/10 hover:text-white"
-                >
-                  <MoreHorizontal size={19} />
-                </button>
-              </header>
-
-              <p className="py-4 text-sm leading-6 text-white/85">
-                {post.text}
-              </p>
-
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt="Shared post"
-                  className="max-h-96 w-full rounded-2xl border border-white/10 object-cover"
-                />
-              )}
-
-              <div className="mt-4 flex items-center gap-2 border-t border-white/15 pt-3">
-                <button
-                  onClick={() => togglePost(setLikedPosts, post.id)}
-                  className={`flex items-center gap-2 rounded-full px-3 py-2 text-xs transition ${isLiked ? "bg-rose-400/20 text-rose-200" : "text-white/65 hover:bg-white/10 hover:text-white"}`}
-                >
-                  <Heart size={17} fill={isLiked ? "currentColor" : "none"} />
-                  {post.likes + (isLiked ? 1 : 0)}
-                </button>
-                <button className="flex items-center gap-2 rounded-full px-3 py-2 text-xs text-white/65 transition hover:bg-white/10 hover:text-white">
-                  <MessageCircle size={17} />
-                  {post.comments}
-                </button>
-                <button
-                  onClick={() => togglePost(setSavedPosts, post.id)}
-                  aria-label={isSaved ? "Remove saved post" : "Save post"}
-                  className={`ml-auto rounded-full p-2 transition ${isSaved ? "text-amber-200" : "text-white/65 hover:bg-white/10 hover:text-white"}`}
-                >
-                  <Bookmark
-                    size={17}
-                    fill={isSaved ? "currentColor" : "none"}
-                  />
-                </button>
-                <button
-                  aria-label="Share post"
-                  className="rounded-full p-2 text-white/65 transition hover:bg-white/10 hover:text-white"
-                >
-                  <Send size={17} />
-                </button>
               </div>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+              <div className="min-w-0">
+                <p className="text-base font-semibold tracking-wide">
+                  Robert Steward
+                </p>
+                <p className="text-sm text-gray-400">@robertsteward</p>
+              </div>
+            </div>
+
+            <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100">
+              <EllipsisVertical />
+            </button>
+          </header>
+
+          <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] px-3 py-3 text-amber-50 md:px-4 md:block md:mx-auto">
+            <p className="text-[15px] leading-7 text-amber-50/90">
+              dsjndncjnd wcbbhudbuhb bhubushb uhbw ubuwbubuweb ubue bubequ ube
+              bue buwb ubeu eb ube huu guyg yug ugu gug ug uhbu bu ueuweb uew
+            </p>
+          </div>
+
+          <div className="mt-4 border">
+            <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 sm:w-[70vw] sm:block sm:mx-auto md:w-[50vw] lg:w-[40vw] ">
+              <img
+                src="/716142778296315368.jpg"
+                className="max-h-[600px] w-full object-contain rounded-[22px] border border-white/30"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-gray-400">
+            <div className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-rose-400">
+              <Heart color="currentColor" size={24} />
+              <p className="text-sm font-medium">0</p>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-sky-400">
+              <MessageCircle size={24} />
+              <p className="text-sm font-medium">15</p>
+            </div>
+
+            <div className="rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300">
+              <Bookmark size={24} />
+            </div>
+          </div>
+        </article>
+      </main>
+    </>
   );
 }
 
