@@ -1,8 +1,16 @@
-import { EyeClosed, Eye, User, KeyRound, Mail } from "lucide-react";
+import {
+  AlertCircle,
+  EyeClosed,
+  Eye,
+  User,
+  KeyRound,
+  Mail,
+} from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
-import Loader from "../loader";
 import { useNavigate } from "react-router";
+import { getAuthErrorMessage } from "./auth-error";
+import Loader from "../loader";
 
 function Register({ setIsLogin, onAuthenticated }) {
   const navigate = useNavigate();
@@ -16,11 +24,43 @@ function Register({ setIsLogin, onAuthenticated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const { name, email, password } = e.currentTarget.elements;
+    if (!name.value.trim()) {
+      setError("Enter your name.");
+      return;
+    }
+    if (!email.value.trim()) {
+      setError("Enter your email address.");
+      return;
+    }
+    if (!password.value) {
+      setError("Choose a password.");
+      return;
+    }
+    if (name.value.length < 10) {
+      setError("Your name must be at least 10 characters long.");
+      return;
+    }
+    if (email.validity.typeMismatch || email.validity.patternMismatch) {
+      setError("Enter a valid Gmail address, such as name@gmail.com.");
+      return;
+    }
+    if (email.validity.tooShort) {
+      setError("Enter a valid Gmail address, such as name@gmail.com.");
+      return;
+    }
+    if (password.value.length < 8) {
+      setError("Your password must be at least 8 characters long.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        "https://wavely-backend-7ryc.onrender.com/api/auth/register",
         {
           name: userName,
           email: userEmail,
@@ -33,8 +73,8 @@ function Register({ setIsLogin, onAuthenticated }) {
       onAuthenticated();
       navigate("/feeds");
       console.log(response.data);
-    } catch (error) {
-      setError(error.response?.data.message);
+    } catch (requestError) {
+      setError(getAuthErrorMessage(requestError, "register"));
     } finally {
       setLoading(false);
     }
@@ -47,13 +87,35 @@ function Register({ setIsLogin, onAuthenticated }) {
       <div className="flex items-center gap-6">
         {loading && <Loader />}
         {/* Formulaire Principal */}
-        <form className="flex-1 flex flex-col gap-5" onSubmit={handleSubmit}>
+        <form
+          className="flex-1 flex flex-col gap-5"
+          onSubmit={handleSubmit}
+          noValidate
+          autoComplete="off"
+        >
+          {error && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-red-400/40 bg-red-950/50 px-3 py-2.5 text-sm leading-5 text-red-100"
+            >
+              <AlertCircle
+                className="mt-0.5 h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
+              <span>{error}</span>
+            </div>
+          )}
           <div className="flex items-center">
             <User className="mb-2.5 ml-5 " color="gray" />
             <input
               type="text"
+              name="name"
+              autoComplete="off"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setError("");
+              }}
               placeholder="Enter your full name"
               required
               minLength={10}
@@ -65,8 +127,13 @@ function Register({ setIsLogin, onAuthenticated }) {
             <Mail className="mb-2.5 ml-5 " color="gray" />
             <input
               type="email"
+              name="email"
+              autoComplete="off"
               value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
+              onChange={(e) => {
+                setUserEmail(e.target.value);
+                setError("");
+              }}
               placeholder="Your Email"
               required
               pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
@@ -79,11 +146,16 @@ function Register({ setIsLogin, onAuthenticated }) {
             <KeyRound className="mb-2.5 ml-5 " color="gray" />
             <input
               type={isClosed ? "password" : "text"}
+              name="password"
+              autoComplete="off"
               placeholder="Choose a password"
               required
               minLength={8}
               value={userPassword}
-              onChange={(e) => setUserPassword(e.target.value)}
+              onChange={(e) => {
+                setUserPassword(e.target.value);
+                setError("");
+              }}
               className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors ml-3.5"
             />
             {isClosed ? (
@@ -100,14 +172,13 @@ function Register({ setIsLogin, onAuthenticated }) {
               />
             )}
           </div>
-          <div>
-            <p className="text-red-200 text-center">{error}</p>
-          </div>
           <button
             type="submit"
-            className="mt-4 w-full bg-orange-300 hover:bg-orange-500 text-white font-medium py-2.5 rounded-sm transition-colors text-sm cursor-pointer"
+            disabled={loading}
+            aria-busy={loading}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-sm bg-orange-300 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Join us
+            {loading ? "Creating account..." : "Join us"}
           </button>
           <p className="text-xs text-center text-gray-400 mt-2">
             Already a Member ?

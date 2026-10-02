@@ -1,5 +1,7 @@
+import axios from "axios";
 import { Image, Video, X } from "lucide-react";
 import { useRef, useState } from "react";
+import Loader from "../loader.jsx";
 
 function PostField() {
   const videoInput = useRef(null);
@@ -7,10 +9,57 @@ function PostField() {
 
   const [imgFiles, setImgFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleText = (e) => {
+    setText(e.target.value);
+  };
 
   const handleImgFiles = (e) => {
     const selectImage = Array.from(e.target.files);
     setImgFiles(selectImage);
+  };
+
+  const uploadPost = async () => {
+    if (!text.trim() && imgFiles.length === 0 && videoFiles.length === 0) {
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+
+    formData.append("content", text);
+
+    imgFiles.forEach((file) => {
+      formData.append("image", file);
+    });
+
+    videoFiles.forEach((file) => {
+      formData.append("video", file);
+    });
+
+    try {
+      const response = await axios.post(
+        "https://wavely-backend-7ryc.onrender.com/api/post",
+        formData,
+        {
+          withCredentials: true,
+        },
+      );
+
+      console.log(response.data);
+
+      // Nettoyer après succès
+      setText("");
+      setImgFiles([]);
+      setVideoFiles([]);
+    } catch (error) {
+      console.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVideo = (e) => {
@@ -36,12 +85,27 @@ function PostField() {
     );
   };
 
+  const showVideoPreview = (event) => {
+    const preview = event.currentTarget;
+    if (Number.isFinite(preview.duration) && preview.duration > 0) {
+      preview.currentTime = Math.min(0.1, preview.duration / 2);
+    }
+  };
+
   return (
     <div className="px-7 pb-7">
+      {loading && <Loader />}
+      <div className="rounded-2xl border border-white/10 bg-black/10 p-5">
+        <h2 className="mb-4 text-lg font-semibold text-white">
+          Create a new post
+        </h2>
+      </div>
       <div>
         <textarea
           placeholder="What's going on today?"
+          value={text}
           className="min-h-32 w-full resize-none rounded-2xl border border-white/10 bg-black/10 px-4 py-4 text-base text-white outline-none placeholder:text-white/35 transition focus:border-amber-200/45 focus:bg-black/15"
+          onChange={handleText}
         />
 
         {/* IMAGE INPUT */}
@@ -95,6 +159,8 @@ function PostField() {
                   <video
                     src={URL.createObjectURL(video)}
                     controls
+                    preload="metadata"
+                    onLoadedMetadata={showVideoPreview}
                     className="h-40 w-72 max-w-full rounded-xl object-cover ring-1 ring-white/15"
                   />
                   <button
@@ -135,7 +201,11 @@ function PostField() {
             </button>
           </div>
 
-          <button className="rounded-xl border border-emerald-200/20 bg-emerald-300/15 px-5 py-2.5 text-sm font-semibold text-emerald-50 transition hover:-translate-y-0.5 hover:bg-emerald-300/25">
+          <button
+            className="rounded-xl border border-emerald-200/20 bg-emerald-300/15 px-5 py-2.5 text-sm font-semibold text-emerald-50 transition hover:-translate-y-0.5 hover:bg-emerald-300/25"
+            onClick={uploadPost}
+            disabled={loading}
+          >
             Publish
           </button>
         </div>

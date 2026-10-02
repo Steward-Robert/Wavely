@@ -1,8 +1,9 @@
 import { Camera, FileText, Heart, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import VerifiedBadge from "../VerifiedBadge.jsx";
+import ProfilePosts from "./ProfilePosts.jsx";
 
 const optimizeImage = (file) =>
   new Promise((resolve, reject) => {
@@ -40,6 +41,9 @@ const optimizeImage = (file) =>
 
 function Profil({ user, setUser }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState("");
 
   const changeProfil = useRef(null);
   const handleChangeProfile = () => {
@@ -61,7 +65,7 @@ function Profil({ user, setUser }) {
       const optimizedFile = await optimizeImage(file);
       formData.append("image", optimizedFile);
       const response = await axios.post(
-        "http://localhost:3000/api/upload",
+        "https://wavely-backend-7ryc.onrender.com/api/upload",
         formData,
         {
           withCredentials: true,
@@ -84,11 +88,60 @@ function Profil({ user, setUser }) {
     }
   };
 
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const loadPosts = async () => {
+      setPostsLoading(true);
+      setPostsError("");
+
+      try {
+        const response = await axios.get(
+          `https://wavely-backend-7ryc.onrender.com/api/userInfo/${encodeURIComponent(user.id)}`,
+          {
+            withCredentials: true,
+            signal: controller.signal,
+          },
+        );
+        setPosts(response.data.user.posts ?? []);
+      } catch {
+        if (!controller.signal.aborted) {
+          setPostsError("Could not load your posts. Please try again.");
+        }
+      } finally {
+        if (!controller.signal.aborted) setPostsLoading(false);
+      }
+    };
+
+    loadPosts();
+    return () => controller.abort();
+  }, [user?.id]);
+
   const stats = [
     { label: "Friends", value: 0, icon: Users },
-    { label: "Posts", value: 0, icon: FileText },
-    { label: "Likes", value: 0, icon: Heart },
+    {
+      label: "Posts",
+      value: postsLoading ? (user?._count?.posts ?? "—") : posts.length,
+      icon: FileText,
+    },
+    { label: "Likes", value: user?._count?.likes ?? 0, icon: Heart },
   ];
+
+  const deleteOwnPost = async (post) => {
+    await axios.delete(
+      `https://wavely-backend-7ryc.onrender.com/api/post/${post.id}`,
+      {
+        withCredentials: true,
+      },
+    );
+    setPosts((currentPosts) =>
+      currentPosts.filter((currentPost) => currentPost.id !== post.id),
+    );
+  };
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 pb-28 pt-24 sm:px-6 md:px-28 lg:pb-16 lg:pt-28 xl:px-36">
@@ -164,6 +217,14 @@ function Profil({ user, setUser }) {
         <PersonalInfo
           name={user?.name || "Unknown"}
           email={user?.email || "no email available"}
+        />
+        <ProfilePosts
+          title="Your posts"
+          posts={posts}
+          loading={postsLoading}
+          error={postsError}
+          canDelete
+          onDelete={deleteOwnPost}
         />
       </div>
     </main>

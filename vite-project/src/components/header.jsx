@@ -44,7 +44,7 @@ function Header() {
             <Bell size={19} strokeWidth={1.8} />
           </button>
           <div
-            className="h-10 w-10 cursor-pointer rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1)]"
+            className="h-13 w-13 cursor-pointer rounded-full border border-cyan-200/30 p-0.5 shadow-[0_0_18px_rgba(103,232,249,0.1)]"
             onClick={() => navigate("/account")}
           >
             <img

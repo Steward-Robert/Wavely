@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { EyeClosed, Eye, Mail, KeyRound } from "lucide-react";
+import { AlertCircle, EyeClosed, Eye, Mail, KeyRound } from "lucide-react";
 import axios from "axios";
-import Loader from "../loader";
 import { useNavigate } from "react-router";
+import { getAuthErrorMessage } from "./auth-error";
+import Loader from "../loader";
 
 function Login({ setIsLogin, onAuthenticated }) {
   const navigate = useNavigate();
@@ -10,15 +11,31 @@ function Login({ setIsLogin, onAuthenticated }) {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [login, setLogin] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    const { email, password } = e.currentTarget.elements;
+    if (!email.value.trim()) {
+      setError("Enter your email address.");
+      return;
+    }
+    if (!password.value) {
+      setError("Enter your password.");
+      return;
+    }
+    if (email.validity.typeMismatch) {
+      setError("Enter a valid email address, such as name@example.com.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
+        "https://wavely-backend-7ryc.onrender.com/api/auth/login",
         {
           email: userEmail,
           password: userPassword,
@@ -30,12 +47,8 @@ function Login({ setIsLogin, onAuthenticated }) {
       onAuthenticated();
       navigate("/feeds");
       console.log(response.data);
-    } catch (error) {
-      console.log("messages:", error.message);
-      console.log("code:", error.code);
-      console.log("status:", error.response?.status);
-      console.log("data:", error.response?.data);
-      setLogin(error.response?.data.message);
+    } catch (requestError) {
+      setError(getAuthErrorMessage(requestError, "login"));
     } finally {
       setLoading(false);
     }
@@ -47,14 +60,36 @@ function Login({ setIsLogin, onAuthenticated }) {
       <div className="flex items-center gap-6">
         {loading && <Loader />}
         {/* Formulaire Principal */}
-        <form className="flex-1 flex flex-col gap-5" onSubmit={handleSubmit}>
+        <form
+          className="flex-1 flex flex-col gap-5"
+          onSubmit={handleSubmit}
+          noValidate
+          autoComplete="off"
+        >
+          {error && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-red-400/40 bg-red-950/50 px-3 py-2.5 text-sm leading-5 text-red-100"
+            >
+              <AlertCircle
+                className="mt-0.5 h-4 w-4 shrink-0"
+                aria-hidden="true"
+              />
+              <span>{error}</span>
+            </div>
+          )}
           <div className="flex items-center">
             <Mail className="mb-2.5 ml-5 " color="gray" />
             <input
               type="email"
               placeholder="Email"
+              name="email"
+              autoComplete="off"
               value={userEmail}
-              onChange={(e) => setUserEmail(e.target.value)}
+              onChange={(e) => {
+                setUserEmail(e.target.value);
+                setError("");
+              }}
               required
               className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors ml-3.5"
             />
@@ -65,9 +100,14 @@ function Login({ setIsLogin, onAuthenticated }) {
             <input
               type={isClosed ? "password" : "text"}
               placeholder="Password"
+              name="password"
+              autoComplete="off"
               required
               value={userPassword}
-              onChange={(e) => setUserPassword(e.target.value)}
+              onChange={(e) => {
+                setUserPassword(e.target.value);
+                setError("");
+              }}
               className="w-full bg-transparent border-b border-gray-600 pb-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-orange-300 transition-colors ml-3.5"
             />
             {isClosed ? (
@@ -84,13 +124,13 @@ function Login({ setIsLogin, onAuthenticated }) {
               />
             )}
           </div>
-          <div className="text-red-200 text-center"> {login}</div>
-
           <button
             type="submit"
-            className="mt-4 w-full bg-orange-300 hover:bg-orange-500 text-white font-medium py-2.5 rounded-sm transition-colors text-sm cursor-pointer"
+            disabled={loading}
+            aria-busy={loading}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-sm bg-orange-300 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-500 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            Join us
+            {loading ? "Logging in..." : "Join us"}
           </button>
           <p className="text-xs text-center text-gray-400 mt-2">
             Do not have an account yet ?

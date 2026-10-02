@@ -19,35 +19,36 @@ import LSidebar from "../components/sidebar/leftSidbar.jsx";
 const features = [
   {
     title: "Connect",
-    description: "Find friends, discover new people, and build your community.",
+    description:
+      "Connect with friends, meet new people, and grow your community.",
     icon: Users,
   },
   {
     title: "Share",
     description:
-      "Share photos, posts, and moments with the people who matter to you.",
+      "Share photos, updates, and everyday moments with your community.",
     icon: Image,
   },
   {
     title: "Messages",
     description:
-      "Have private conversations and stay connected with your friends.",
+      "Keep in touch with friends through private conversations.",
     icon: MessageCircle,
   },
   {
     title: "Interact",
     description:
-      "Like, comment, and engage with the content shared by your community.",
+      "Respond to posts and take part in the conversations that matter.",
     icon: Heart,
   },
   {
     title: "Discover",
-    description: "Explore new people and discover content from your community.",
+    description: "Meet new people and explore what your community is sharing.",
     icon: Compass,
   },
   {
     title: "Your Space",
-    description: "Manage your profile and make Wavely your own.",
+    description: "Personalize your profile and make Wavely feel like yours.",
     icon: UserRound,
   },
 ];
@@ -109,9 +110,9 @@ function AboutWavely() {
             Connect. Share. Discover.
           </p>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Wavely is a social platform built to bring people closer together.
-            Share your moments, connect with friends, discover new people, and
-            keep your conversations in one place.
+            Wavely is a social platform for sharing moments, building
+            meaningful connections, and discovering the people and
+            conversations that matter to you.
           </p>
         </section>
 
@@ -129,10 +130,9 @@ function AboutWavely() {
                   What is Wavely?
                 </h2>
                 <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300 ">
-                  Wavely is designed to make social connection simple,
-                  enjoyable, and personal. Whether you&apos;re sharing a moment,
-                  talking with a friend, or discovering new people, Wavely gives
-                  you a place to stay connected and express yourself.
+                  Wavely brings social interaction into one welcoming space.
+                  Share an update, catch up with friends, or discover new
+                  people while staying connected to your community.
                 </p>
               </div>
             </div>
@@ -145,7 +145,7 @@ function AboutWavely() {
               Made for connection
             </p>
             <h2 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">
-              Everything you need to stay connected
+              Tools for a more connected community
             </h2>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -168,9 +168,9 @@ function AboutWavely() {
               Social should make people feel connected, not overwhelmed.
             </h2>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-200">
-              We believe social platforms should make people feel connected, not
-              overwhelmed. Wavely aims to create a simple, welcoming space where
-              people can communicate, share, and build meaningful connections.
+              We believe social platforms should support connection without
+              adding unnecessary noise. Wavely is designed as a welcoming space
+              for conversation, self-expression, and meaningful relationships.
             </p>
           </div>
         </section>
@@ -191,8 +191,8 @@ function AboutWavely() {
             </p>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-300">
               Wavely was created by Robert Steward, a self-taught developer
-              passionate about building modern web applications and creating
-              meaningful digital experiences.
+              focused on building thoughtful web applications and useful
+              digital experiences.
             </p>
           </div>
         </section>

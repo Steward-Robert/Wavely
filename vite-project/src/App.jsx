@@ -44,9 +44,12 @@ function App() {
 
     const loadUser = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/me", {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          "https://wavely-backend-7ryc.onrender.com/api/me",
+          {
+            withCredentials: true,
+          },
+        );
         if (isCurrent) setUser(response.data.user);
       } catch {
         if (isCurrent) setUser(null);
@@ -64,9 +67,12 @@ function App() {
 
     const loadAllUser = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/users", {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          "https://wavely-backend-7ryc.onrender.com/api/users",
+          {
+            withCredentials: true,
+          },
+        );
 
         if (isCurrent) setAllUser(response.data.users);
       } catch (error) {
@@ -107,7 +113,7 @@ function App() {
               <FriendsPage allUser={alluser} setUserInfo={setUserInfo} />
             }
           />
-          <Route path="pst" element={<Post />} />
+          <Route path="pst" element={<Post user={user} />} />
           <Route
             path="/stories"
             element={<ShowStories />}
@@ -129,7 +135,7 @@ function App() {
             path="account"
             element={<ProfilAcc user={user} setUser={setUser} />}
           />
-          <Route path="/user/:userId" element={<UserProfile />} />
+          <Route path="/user/:userId" element={<UserProfile user={user} />} />
           <Route path="about" element={<AboutWavely />} />
           <Route path="/report" element={<ReportProblem />} />
           <Route path="/contact-support" element={<ContactSupport />} />

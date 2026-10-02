@@ -37,6 +37,7 @@ function AdminDashboard({ user }) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedPostAuthor, setSelectedPostAuthor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshVersion, setRefreshVersion] = useState(0);
@@ -54,12 +55,18 @@ function AdminDashboard({ user }) {
           return;
         }
 
-        const route = `/admin/${section}`;
+        const isPostAuthors = section === "posts" && !selectedPostAuthor;
+        const route = isPostAuthors
+          ? "/admin/posts/authors"
+          : `/admin/${section}`;
         const params = { page, limit: 25 };
         if (search.trim() && section !== "reports") params.q = search.trim();
+        if (section === "posts" && selectedPostAuthor?.id) {
+          params.authorId = selectedPostAuthor.id;
+        }
         if (section === "reports" && statusFilter) params.status = statusFilter;
         const response = await api.get(route, { params });
-        const key = section;
+        const key = isPostAuthors ? "authors" : section;
         if (current) {
           setRecords(response.data[key] || []);
           setPagination(response.data.pagination || emptyPagination);
@@ -86,7 +93,15 @@ function AdminDashboard({ user }) {
     return () => {
       current = false;
     };
-  }, [section, page, search, statusFilter, refreshVersion, navigate]);
+  }, [
+    section,
+    page,
+    search,
+    statusFilter,
+    selectedPostAuthor,
+    refreshVersion,
+    navigate,
+  ]);
 
   const beginLoad = () => {
     setLoading(true);
@@ -105,6 +120,7 @@ function AdminDashboard({ user }) {
     setPage(1);
     setSearch("");
     setStatusFilter("");
+    setSelectedPostAuthor(null);
   };
 
   const requestAction = (nextDialog) => setDialog(nextDialog);
@@ -172,6 +188,13 @@ function AdminDashboard({ user }) {
           "Unable to update report status.",
       );
     }
+  };
+
+  const handleSelectPostAuthor = (author) => {
+    beginLoad();
+    setSelectedPostAuthor(author);
+    setSearch("");
+    setPage(1);
   };
 
   const selectedSection = sections.find((item) => item.id === section);
@@ -341,6 +364,14 @@ function AdminDashboard({ user }) {
                 setPage(value);
               }}
               onDelete={(record) => askDelete(record, section)}
+              selectedAuthor={section === "posts" ? selectedPostAuthor : null}
+              onSelectAuthor={handleSelectPostAuthor}
+              onBackToPosts={() => {
+                beginLoad();
+                setSelectedPostAuthor(null);
+                setPage(1);
+                setSearch("");
+              }}
             />
           ) : (
             <AdminReports

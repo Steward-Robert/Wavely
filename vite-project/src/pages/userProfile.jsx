@@ -14,8 +14,9 @@ import Header from "../components/header";
 import Loader from "../components/loader";
 import LSidebar from "../components/sidebar/leftSidbar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
+import ProfilePosts from "../components/my-account/ProfilePosts.jsx";
 
-function UserProfile() {
+function UserProfile({ user }) {
   const { userId } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +31,7 @@ function UserProfile() {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/userInfo/${encodeURIComponent(userId)}`,
+          `https://wavely-backend-7ryc.onrender.com/api/userInfo/${encodeURIComponent(userId)}`,
           {
             withCredentials: true,
             signal: controller.signal,
@@ -54,11 +55,37 @@ function UserProfile() {
     return () => controller.abort();
   }, [userId]);
 
+  const isOwnProfile = Boolean(user?.id && user.id === profile?.id);
+
+  const deleteOwnPost = async (post) => {
+    await axios.delete(
+      `https://wavely-backend-7ryc.onrender.com/api/post/${post.id}`,
+      {
+        withCredentials: true,
+      },
+    );
+    setProfile((currentProfile) =>
+      currentProfile
+        ? {
+            ...currentProfile,
+            posts: currentProfile.posts.filter(
+              (currentPost) => currentPost.id !== post.id,
+            ),
+          }
+        : currentProfile,
+    );
+  };
+
   const stats = [
     {
       label: "Friends",
       value: profile?._count?.friends ?? "—",
       icon: Users,
+    },
+    {
+      label: "Posts",
+      value: profile?.posts?.length ?? profile?._count?.posts ?? 0,
+      icon: FileText,
     },
     { label: "Likes", value: profile?._count?.likes ?? 0, icon: Heart },
     {
@@ -122,7 +149,7 @@ function UserProfile() {
                 </div>
               </div>
 
-              <div className="mt-8 grid grid-cols-3 divide-x divide-white/10 rounded-2xl border border-white/10 bg-black/15 py-4">
+              <div className="mt-8 grid grid-cols-2 divide-x divide-white/10 rounded-2xl border border-white/10 bg-black/15 py-4 sm:grid-cols-4">
                 {stats.map(({ label, value, icon: Icon }) => (
                   <div
                     key={label}
@@ -146,41 +173,11 @@ function UserProfile() {
                 <InfoRow icon={UserRound} label="Name" value={profile.name} />
               </div>
 
-              <div className="mt-8">
-                <div className="mb-4 flex items-center gap-2">
-                  <FileText size={18} className="text-cyan-200/75" />
-                  <h2 className="text-xl font-semibold text-white">Posts</h2>
-                </div>
-                {profile.posts?.length ? (
-                  <div className="divide-y divide-white/10">
-                    {profile.posts.slice(0, 5).map((post) => (
-                      <article key={post.id} className="py-4 first:pt-0">
-                        {post.content && (
-                          <p className="whitespace-pre-wrap wrap-break-word text-sm leading-6 text-slate-200">
-                            {post.content}
-                          </p>
-                        )}
-                        {post.image && (
-                          <img
-                            src={post.image}
-                            alt="User post"
-                            className="mt-3 max-h-96 w-full rounded-xl object-cover"
-                          />
-                        )}
-                        {post.createdAt && (
-                          <p className="mt-2 text-xs text-slate-500">
-                            {new Date(post.createdAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="rounded-2xl border border-white/10 bg-black/15 px-4 py-6 text-sm text-slate-400">
-                    No posts yet.
-                  </p>
-                )}
-              </div>
+              <ProfilePosts
+                posts={profile.posts}
+                canDelete={isOwnProfile}
+                onDelete={deleteOwnPost}
+              />
             </section>
           </article>
         )}

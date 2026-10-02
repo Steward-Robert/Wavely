@@ -16,7 +16,7 @@ function Popup({ setPopupOpen, setIsLoading }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/logout",
+        "https://wavely-backend-7ryc.onrender.com/api/auth/logout",
         {},
         {
           withCredentials: true,

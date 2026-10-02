@@ -34,6 +34,13 @@ function ShareSM({ user }) {
     setVideo((files) => files.filter((_, index) => index !== indexToRemove));
   };
 
+  const showVideoPreview = (event) => {
+    const preview = event.currentTarget;
+    if (Number.isFinite(preview.duration) && preview.duration > 0) {
+      preview.currentTime = Math.min(0.1, preview.duration / 2);
+    }
+  };
+
   return (
     <div className="mx-2 mt-10 w-[80vw] mx-auto block overflow-hidden rounded-[30px] border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)] sm:p-5 md:w-xl md:block md:mx-auto sm:w-[80vw] sm:block sm:mx-auto lg:w-[45vw]">
       <div className="flex items-center gap-1 rounded-2xl border border-white/5 bg-white/[0.02] px-2 py-2">
@@ -106,6 +113,8 @@ function ShareSM({ user }) {
                 <video
                   src={URL.createObjectURL(video)}
                   controls
+                  preload="metadata"
+                  onLoadedMetadata={showVideoPreview}
                   className="h-40 w-72 max-w-full rounded-xl object-cover ring-1 ring-white/15"
                 />
                 <button

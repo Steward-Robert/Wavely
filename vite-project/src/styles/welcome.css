@@ -17,3 +17,11 @@
     filter: blur(0);
   }
 }
+
+#welcome input:-webkit-autofill,
+#welcome input:-webkit-autofill:hover,
+#welcome input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #fff;
+  -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.75) inset;
+  transition: background-color 9999s ease-out 0s;
+}

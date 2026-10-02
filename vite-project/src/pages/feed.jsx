@@ -14,7 +14,16 @@ function Feed({ user, alluser }) {
       <LSidebar />
       <Stories />
       <ShareSM user={user} />
-      <Foryou />
+      <div className="mx-auto my-7 w-[80vw] lg:w-[45vw]">
+        <div aria-hidden="true" className="flex flex-col gap-2">
+          <span className="h-px w-full bg-gradient-to-r from-white/20 to-transparent" />
+          <span className="h-px w-3/4 bg-gradient-to-r from-white/15 to-transparent" />
+          <span className="h-px w-1/2 bg-gradient-to-r from-white/10 to-transparent" />
+        </div>
+      </div>
+      <div className="pb-28 md:pb-0">
+        <Foryou />
+      </div>
       <BMenu />
     </>
   );
