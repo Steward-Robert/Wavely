@@ -42,7 +42,7 @@ function ShareSM({ user }) {
   };
 
   return (
-    <div className="mx-2 mt-10 w-[80vw] mx-auto block overflow-hidden rounded-[30px] border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)] sm:p-5 md:w-xl md:block md:mx-auto sm:w-[80vw] sm:block sm:mx-auto lg:w-[45vw]">
+    <div className="mx-2 mt-10 w-[95vw] mx-auto block overflow-hidden rounded-[30px] border border-white/10 bg-[#05070b]/90 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_55%)] sm:p-5 md:w-xl md:block md:mx-auto sm:w-[80vw] sm:block sm:mx-auto lg:w-[45vw]">
       <div className="flex items-center gap-1 rounded-2xl border border-white/5 bg-white/[0.02] px-2 py-2">
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-white/20 bg-white/10 shadow-lg shadow-black/20">
           <img

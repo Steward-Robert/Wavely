@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const showVideoPreview = (event) => {
   const preview = event.currentTarget;
@@ -41,7 +41,6 @@ function ProfilePosts({
     <section className="border-t border-white/10 px-5 py-7 sm:px-8 sm:py-9">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <FileText size={18} className="text-cyan-200/75" />
           <h2 className="text-xl font-semibold text-white">{title}</h2>
           <span className="text-xs text-slate-400">{posts.length}</span>
         </div>

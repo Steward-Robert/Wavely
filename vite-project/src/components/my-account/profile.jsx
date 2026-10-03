@@ -152,7 +152,7 @@ function Profil({ user, setUser }) {
             Your space
           </p>
           <div className="relative mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
-            <div className="relative h-28 w-28 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
+            <div className="relative h-32 w-32 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
               <img
                 src={
                   avatarPreview ??

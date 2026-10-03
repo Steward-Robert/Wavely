@@ -29,7 +29,7 @@ function AsideInfo() {
         <div className="relative mb-4 lg:pt-5">
           <button
             onClick={() => navigate("/settigns")}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100 sm:absolute sm:right-0 sm:top-0"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100 sm:absolute sm:right-0 sm:top-0 absolute right-0"
             aria-label="Go back"
           >
             <Undo2 size={18} className="text-current" />
