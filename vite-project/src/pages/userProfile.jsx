@@ -9,7 +9,6 @@ import {
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import BMenu from "../components/feeds/bottomMenu";
 import Header from "../components/header";
 import Loader from "../components/loader";
 import LSidebar from "../components/sidebar/leftSidbar";
@@ -182,7 +181,6 @@ function UserProfile({ user }) {
           </article>
         )}
       </main>
-      <BMenu />
     </div>
   );
 }

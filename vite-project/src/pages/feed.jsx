@@ -1,4 +1,3 @@
-import BMenu from "../components/feeds/bottomMenu.jsx";
 import Foryou from "../components/feeds/foryou.jsx";
 import Header from "../components/header.jsx";
 import LSidebar from "../components/sidebar/leftSidbar.jsx";
@@ -24,7 +23,6 @@ function Feed({ user, alluser }) {
       <div className="pb-28 md:pb-0">
         <Foryou />
       </div>
-      <BMenu />
     </>
   );
 }

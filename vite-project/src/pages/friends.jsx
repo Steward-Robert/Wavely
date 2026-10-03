@@ -1,4 +1,3 @@
-import BMenu from "../components/feeds/bottomMenu";
 import Header from "../components/header";
 import FriendMenu from "../components/friends-page/friendMenu";
 import FriendInfo from "../components/friends-page/friendInfo.jsx";
@@ -26,8 +25,6 @@ function FriendsPage({ allUser, setUserInfo }) {
           {activeMenu == "received" && <FriendREQ />}
         </div>
       </main>
-
-      <BMenu />
     </>
   );
 }

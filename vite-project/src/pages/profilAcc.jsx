@@ -1,4 +1,3 @@
-import BMenu from "../components/feeds/bottomMenu";
 import Header from "../components/header";
 import Profil from "../components/my-account/profile";
 import LSidebar from "../components/sidebar/leftSidbar";
@@ -11,7 +10,6 @@ function ProfilAcc({ user, setUser }) {
       </div>
       <LSidebar />
       <Profil user={user} setUser={setUser} />
-      <BMenu />
     </div>
   );
 }

@@ -12,7 +12,6 @@ import {
   Users,
   Waves,
 } from "lucide-react";
-import BMenu from "../components/feeds/bottomMenu.jsx";
 import Header from "../components/header.jsx";
 import LSidebar from "../components/sidebar/leftSidbar.jsx";
 
@@ -230,7 +229,6 @@ function AboutWavely() {
         </footer>
       </main>
       <div className="fixed inset-x-0 bottom-0 z-60 md:hidden lg:hidden">
-        <BMenu />
       </div>
     </div>
   );

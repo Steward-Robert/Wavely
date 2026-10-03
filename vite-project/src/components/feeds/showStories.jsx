@@ -1,5 +1,4 @@
 import Header from "../header";
-import BMenu from "./bottomMenu";
 
 function ShowStories() {
   const stories = (storie) => {};
@@ -7,7 +6,6 @@ function ShowStories() {
     <>
       <Header />
       <div></div>
-      <BMenu />
     </>
   );
 }

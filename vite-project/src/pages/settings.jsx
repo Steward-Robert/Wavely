@@ -1,4 +1,3 @@
-import BMenu from "../components/feeds/bottomMenu.jsx";
 import Header from "../components/header.jsx";
 import Popup from "../components/logout/logout-popup.jsx";
 import Loader from "../components/loader.jsx";
@@ -168,7 +167,6 @@ function Settings({ isloading, setIsLoading }) {
           </div>
         </section>
       </main>
-      <BMenu />
     </div>
   );
 }
