@@ -1,4 +1,4 @@
-import { Camera, FileText, Heart, LoaderCircle, Users } from "lucide-react";
+import { Camera, FileText, LoaderCircle, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -193,7 +193,6 @@ function Profil({ user, setUser }) {
       value: postsLoading ? (user?._count?.posts ?? "—") : posts.length,
       icon: FileText,
     },
-    { label: "Likes", value: user?._count?.likes ?? 0, icon: Heart },
   ];
 
   const deleteOwnPost = async (post) => {
