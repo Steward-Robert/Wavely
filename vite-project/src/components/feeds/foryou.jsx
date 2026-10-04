@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import FriendB from "../button/friendButton.jsx";
 
-function Foryou() {
+function Foryou({
+  onOpenComments,
+  commentCounts = {},
+}) {
   const [allPost, setAllPost] = useState([]);
   const [likePending, setLikePending] = useState({});
   const [likeError, setLikeError] = useState("");
@@ -126,12 +129,10 @@ function Foryou() {
                 </div>
 
                 {/* OPTIONS */}
-                <button
-                  type="button"
+                <FriendB
+                  usersId={post.author?.id}
                   className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
-                >
-                  <FriendB usersId={post.author?.id} />
-                </button>
+                />
               </header>
 
               {/* CONTENT */}
@@ -195,12 +196,14 @@ function Foryou() {
                 {/* COMMENTS */}
                 <button
                   type="button"
-                  className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-sky-400"
+                  onClick={() => onOpenComments(post.id)}
+                  aria-label={`View comments for ${post.author?.name || "this"} post`}
+                  className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-yellow-200"
                 >
-                  <MessageCircle size={24} />
+                  <MessageCircle aria-hidden="true" size={24} />
 
                   <p className="text-sm font-medium">
-                    {post._count?.comments || 0}
+                    {commentCounts[post.id] ?? post._count?.comments ?? 0}
                   </p>
                 </button>
 

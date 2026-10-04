@@ -4,8 +4,26 @@ import LSidebar from "../components/sidebar/leftSidbar.jsx";
 import ShareSM from "../components/feeds/shareSM.jsx";
 import Stories from "../components/feeds/strories.jsx";
 import RSidebar from "../components/sidebar/rightSidebar.jsx";
+import Comment from "../components/feeds/comment.jsx";
+import { useCallback, useState } from "react";
 
 function Feed({ user, alluser }) {
+  const [showComment, setShowComment] = useState(false);
+  const [commentPostId, setCommentPostId] = useState(null);
+  const [commentCounts, setCommentCounts] = useState({});
+
+  const openComments = (postId) => {
+    setCommentPostId(postId);
+    setShowComment(true);
+  };
+
+  const updateCommentCount = useCallback((postId, count) => {
+    setCommentCounts((currentCounts) => ({
+      ...currentCounts,
+      [postId]: count,
+    }));
+  }, []);
+
   return (
     <>
       <Header user={user} />
@@ -21,7 +39,19 @@ function Feed({ user, alluser }) {
         </div>
       </div>
       <div className="pb-28 md:pb-0">
-        <Foryou />
+        <Foryou
+          onOpenComments={openComments}
+          commentCounts={commentCounts}
+        />
+        {showComment && commentPostId && (
+          <Comment
+            postId={commentPostId}
+            user={user}
+            users={alluser}
+            onCommentCountChange={updateCommentCount}
+            onClose={() => setShowComment(false)}
+          />
+        )}
       </div>
     </>
   );

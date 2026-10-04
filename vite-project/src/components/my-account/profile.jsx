@@ -1,9 +1,12 @@
-import { Camera, FileText, Heart, Users } from "lucide-react";
+import { Camera, FileText, Heart, LoaderCircle, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import ProfilePosts from "./ProfilePosts.jsx";
+
+const MAX_AVATAR_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_AVATAR_DIMENSION = 512;
 
 const optimizeImage = (file) =>
   new Promise((resolve, reject) => {
@@ -11,59 +14,108 @@ const optimizeImage = (file) =>
     const sourceUrl = URL.createObjectURL(file);
 
     image.onload = () => {
-      const scale = Math.min(1, 1200 / Math.max(image.width, image.height));
+      const scale = Math.min(
+        1,
+        MAX_AVATAR_DIMENSION / Math.max(image.width, image.height),
+      );
       const canvas = document.createElement("canvas");
       canvas.width = Math.round(image.width * scale);
       canvas.height = Math.round(image.height * scale);
-      canvas
-        .getContext("2d")
-        .drawImage(image, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(sourceUrl);
+
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("Could not prepare image for upload."));
+        return;
+      }
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error("Could not optimize image"));
+            reject(new Error("Could not prepare image for upload."));
             return;
           }
           resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
         },
         "image/jpeg",
-        0.82,
+        0.84,
       );
     };
     image.onerror = () => {
       URL.revokeObjectURL(sourceUrl);
-      reject(new Error("Could not read image"));
+      reject(new Error("Could not read this image file."));
     };
     image.src = sourceUrl;
   });
 
 function Profil({ user, setUser }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarStatus, setAvatarStatus] = useState("idle");
+  const [avatarMessage, setAvatarMessage] = useState("");
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState("");
 
   const changeProfil = useRef(null);
+  const uploadInProgress = useRef(false);
+  const previewUrl = useRef(null);
   const handleChangeProfile = () => {
-    changeProfil.current.click();
+    if (!loading) changeProfil.current?.click();
   };
 
   const [loading, setLoading] = useState(false);
 
-  const handleAvatar = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  useEffect(() => {
+    if (!loading) return undefined;
 
+    const warnBeforeLeaving = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeLeaving);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeaving);
+  }, [loading]);
+
+  useEffect(
+    () => () => {
+      if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    },
+    [],
+  );
+
+  const handleAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (uploadInProgress.current) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setAvatarStatus("error");
+      setAvatarMessage("Choose a JPG, PNG, or WebP image.");
+      return;
+    }
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      setAvatarStatus("error");
+      setAvatarMessage("Choose an image that is 10 MB or smaller.");
+      return;
+    }
+
+    uploadInProgress.current = true;
     setLoading(true);
-    const previewUrl = URL.createObjectURL(file);
-    setAvatarPreview(previewUrl);
+    setAvatarStatus("preparing");
+    setAvatarMessage("Preparing avatar...");
+    if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+    previewUrl.current = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl.current);
     const formData = new FormData();
 
     try {
       const optimizedFile = await optimizeImage(file);
       formData.append("image", optimizedFile);
+      setAvatarStatus("uploading");
+      setAvatarMessage("Uploading avatar...");
       const response = await axios.post(
         "https://wavely-backend-7ryc.onrender.com/api/upload",
         formData,
@@ -71,19 +123,32 @@ function Profil({ user, setUser }) {
           withCredentials: true,
         },
       );
+      if (!response.data?.avatar?.avatar) {
+        throw new Error("The server did not return a saved avatar.");
+      }
+
       setUser((currentUser) => ({
         ...currentUser,
         avatars: [...(currentUser?.avatars ?? []), response.data.avatar],
       }));
 
       setAvatarPreview(null);
-      URL.revokeObjectURL(previewUrl);
-      console.log(response.data);
+      URL.revokeObjectURL(previewUrl.current);
+      previewUrl.current = null;
+      setAvatarStatus("success");
+      setAvatarMessage("Avatar saved successfully.");
     } catch (error) {
       setAvatarPreview(null);
-      URL.revokeObjectURL(previewUrl);
-      console.error(error);
+      if (previewUrl.current) URL.revokeObjectURL(previewUrl.current);
+      previewUrl.current = null;
+      setAvatarStatus("error");
+      setAvatarMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Avatar upload failed. Please try again.",
+      );
     } finally {
+      uploadInProgress.current = false;
       setLoading(false);
     }
   };
@@ -159,28 +224,39 @@ function Profil({ user, setUser }) {
                   user?.avatars?.at(-1)?.avatar ??
                   "/pfp ideas 🌑.jpg"
                 }
+                alt="Profile avatar"
                 className="h-full w-full rounded-full object-cover"
               />
+              {avatarPreview && (
+                <span className="absolute left-1/2 top-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/75 px-2 py-1 text-[10px] font-medium text-amber-100">
+                  Preview · not saved
+                </span>
+              )}
 
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 className="hidden"
                 ref={changeProfil}
                 onChange={handleAvatar}
+                disabled={loading}
               />
               <button
                 type="button"
                 aria-label="Change profile photo"
-                className="absolute bottom-0 right-0 flex h-9 w-9 items-center justify-center rounded-full border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-lg transition hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-amber-200 cursor-pointer duration-700"
+                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-lg transition duration-700 hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
                 onClick={handleChangeProfile}
                 disabled={loading}
               >
-                <Camera
-                  size={24}
-                  strokeWidth={2.2}
-                  className="hover:rotate-360 duration-700"
-                />
+                {loading ? (
+                  <LoaderCircle size={22} className="animate-spin" />
+                ) : (
+                  <Camera
+                    size={24}
+                    strokeWidth={2.2}
+                    className="hover:rotate-360 duration-700"
+                  />
+                )}
               </button>
             </div>
             <div className="text-center sm:text-left">
@@ -199,6 +275,20 @@ function Profil({ user, setUser }) {
                 Sharing moments, meeting people, and staying close to my
                 community.
               </p>
+              {avatarMessage && !loading && (
+                <div
+                  role={avatarStatus === "error" ? "alert" : "status"}
+                  className={`mt-3 text-sm ${
+                    avatarStatus === "error"
+                      ? "text-rose-300"
+                      : avatarStatus === "success"
+                        ? "text-emerald-300"
+                        : "text-amber-100"
+                  }`}
+                >
+                  <p>{avatarMessage}</p>
+                </div>
+              )}
             </div>
           </div>
 
