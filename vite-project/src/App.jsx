@@ -1,5 +1,6 @@
 import UserProfile from "./pages/userProfile.jsx";
 import UserContext from "./context/UserContext.jsx";
+import { FriendshipProvider } from "./context/FriendshipContext.jsx";
 import "./styles/App.css";
 import Loader from "./components/loader.jsx";
 import Welcome from "../src/pages/welcome.jsx";
@@ -24,7 +25,6 @@ function App() {
   const [showStory, setShowStory] = useState([]);
   const [user, setUser] = useState(null);
   const [alluser, setAllUser] = useState([]);
-  const [userInfo, setUserInfo] = useState([]);
   const [authVersion, setAuthVersion] = useState(0);
 
   const refreshAfterAuthentication = () => {
@@ -91,66 +91,66 @@ function App() {
 
   return (
     <UserContext.Provider value={user}>
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              loading ? (
-                <Loader />
-              ) : (
-                <Welcome onAuthenticated={refreshAfterAuthentication} />
-              )
-            }
-          />
-          <Route
-            path="/feeds"
-            element={<Feed user={user} alluser={alluser} />}
-          />
-          <Route
-            path="/fr"
-            element={
-              <FriendsPage allUser={alluser} setUserInfo={setUserInfo} />
-            }
-          />
-          <Route path="pst" element={<Post user={user} />} />
-          <Route
-            path="/stories"
-            element={<ShowStories />}
-            showStory={showStory}
-            setShowStory={setShowStory}
-          />
-          <Route
-            path="settigns"
-            element={
-              <Settings
-                isloading={isloading}
-                setIsLoading={setIsLoading}
-                user={user}
-                setUser={setUser}
-              />
-            }
-          />
-          <Route
-            path="account"
-            element={<ProfilAcc user={user} setUser={setUser} />}
-          />
-          <Route path="/user/:userId" element={<UserProfile user={user} />} />
-          <Route path="about" element={<AboutWavely />} />
-          <Route path="/report" element={<ReportProblem />} />
-          <Route path="/contact-support" element={<ContactSupport />} />
-          <Route
-            path="/admin"
-            element={
-              user?.role === "ADMIN" ? (
-                <AdminDashboard user={user} />
-              ) : (
-                <Navigate to="/feeds" replace />
-              )
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      <FriendshipProvider key={user?.id || "anonymous"} user={user}>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                loading ? (
+                  <Loader />
+                ) : (
+                  <Welcome onAuthenticated={refreshAfterAuthentication} />
+                )
+              }
+            />
+            <Route
+              path="/feeds"
+              element={<Feed user={user} alluser={alluser} />}
+            />
+            <Route
+              path="/fr"
+              element={<FriendsPage allUser={alluser} />}
+            />
+            <Route path="pst" element={<Post user={user} />} />
+            <Route
+              path="/stories"
+              element={<ShowStories />}
+              showStory={showStory}
+              setShowStory={setShowStory}
+            />
+            <Route
+              path="settigns"
+              element={
+                <Settings
+                  isloading={isloading}
+                  setIsLoading={setIsLoading}
+                  user={user}
+                  setUser={setUser}
+                />
+              }
+            />
+            <Route
+              path="account"
+              element={<ProfilAcc user={user} setUser={setUser} />}
+            />
+            <Route path="/user/:userId" element={<UserProfile user={user} />} />
+            <Route path="about" element={<AboutWavely />} />
+            <Route path="/report" element={<ReportProblem />} />
+            <Route path="/contact-support" element={<ContactSupport />} />
+            <Route
+              path="/admin"
+              element={
+                user?.role === "ADMIN" ? (
+                  <AdminDashboard user={user} />
+                ) : (
+                  <Navigate to="/feeds" replace />
+                )
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </FriendshipProvider>
     </UserContext.Provider>
   );
 }

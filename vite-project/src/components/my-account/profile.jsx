@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import ProfilePosts from "./ProfilePosts.jsx";
+import fetchLikesReceived from "../../utils/profileLikes.js";
 
 const MAX_AVATAR_FILE_SIZE = 10 * 1024 * 1024;
 const MAX_AVATAR_DIMENSION = 512;
@@ -56,6 +57,7 @@ function Profil({ user, setUser }) {
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState("");
+  const [likesReceived, setLikesReceived] = useState(null);
 
   const changeProfil = useRef(null);
   const uploadInProgress = useRef(false);
@@ -186,6 +188,21 @@ function Profil({ user, setUser }) {
     return () => controller.abort();
   }, [user?.id]);
 
+  useEffect(() => {
+    if (!user?.id) return undefined;
+
+    const controller = new AbortController();
+    fetchLikesReceived(user.id, controller.signal)
+      .then((total) => setLikesReceived({ userId: user.id, total }))
+      .catch((error) => {
+        if (!controller.signal.aborted) {
+          console.error("Error loading received likes:", error);
+        }
+      })
+
+    return () => controller.abort();
+  }, [user?.id]);
+
   const stats = [
     { label: "Friends", value: 0, icon: Users },
     {
@@ -195,9 +212,8 @@ function Profil({ user, setUser }) {
     },
     {
       label: "Likes received",
-      value: postsLoading || postsError
-        ? "—"
-        : posts.reduce((total, post) => total + (post._count?.likes ?? 0), 0),
+      value:
+        likesReceived?.userId === user?.id ? likesReceived.total : "—",
       icon: Heart,
     },
   ];
@@ -212,6 +228,15 @@ function Profil({ user, setUser }) {
     setPosts((currentPosts) =>
       currentPosts.filter((currentPost) => currentPost.id !== post.id),
     );
+    setLikesReceived(null);
+    try {
+      setLikesReceived({
+        userId: user.id,
+        total: await fetchLikesReceived(user.id),
+      });
+    } catch (error) {
+      console.error("Error refreshing received likes:", error);
+    }
   };
 
   return (

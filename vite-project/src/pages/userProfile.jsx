@@ -14,12 +14,14 @@ import Loader from "../components/loader";
 import LSidebar from "../components/sidebar/leftSidbar";
 import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import ProfilePosts from "../components/my-account/ProfilePosts.jsx";
+import fetchLikesReceived from "../utils/profileLikes.js";
 
 function UserProfile({ user }) {
   const { userId } = useParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [likesReceived, setLikesReceived] = useState(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -50,7 +52,19 @@ function UserProfile({ user }) {
       }
     };
 
+    const loadLikesReceived = async () => {
+      try {
+        const total = await fetchLikesReceived(userId, controller.signal);
+        setLikesReceived({ userId, total });
+      } catch (requestError) {
+        if (!controller.signal.aborted) {
+          console.error("Error loading received likes:", requestError);
+        }
+      }
+    };
+
     loadProfile();
+    loadLikesReceived();
     return () => controller.abort();
   }, [userId]);
 
@@ -73,6 +87,15 @@ function UserProfile({ user }) {
           }
         : currentProfile,
     );
+    setLikesReceived(null);
+    try {
+      setLikesReceived({
+        userId: profile.id,
+        total: await fetchLikesReceived(profile.id),
+      });
+    } catch (requestError) {
+      console.error("Error refreshing received likes:", requestError);
+    }
   };
 
   const stats = [
@@ -89,10 +112,7 @@ function UserProfile({ user }) {
     {
       label: "Likes received",
       value:
-        profile?.posts?.reduce(
-          (total, post) => total + (post._count?.likes ?? 0),
-          0,
-        ) ?? 0,
+        likesReceived?.userId === profile?.id ? likesReceived.total : "—",
       icon: Heart,
     },
     {

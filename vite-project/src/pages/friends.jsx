@@ -8,7 +8,7 @@ import SentRequest from "../components/friends-page/sentRequest.jsx";
 import MyFriends from "../components/friends-page/myFriends.jsx";
 import FriendREQ from "../components/friends-page/friendREQ.jsx";
 
-function FriendsPage({ allUser, setUserInfo }) {
+function FriendsPage({ allUser }) {
   const [activeMenu, setActiveMenu] = useState("people");
 
   return (
@@ -21,7 +21,7 @@ function FriendsPage({ allUser, setUserInfo }) {
 
           {activeMenu === "people" && <FriendInfo allUser={allUser} />}
           {activeMenu === "sent" && <SentRequest />}
-          {activeMenu == "friends" && <MyFriends setUserInfo={setUserInfo} />}
+          {activeMenu == "friends" && <MyFriends />}
           {activeMenu == "received" && <FriendREQ />}
         </div>
       </main>

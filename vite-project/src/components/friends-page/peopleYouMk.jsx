@@ -16,10 +16,13 @@ function PeopleYouMK({ allUser, searchTerm = "" }) {
           >
             <div className="flex min-w-0 items-center gap-3">
               <div className="h-11 w-11 shrink-0 rounded-full border border-white/15 bg-white/5 p-0.5">
-                <img
-                  src={users.avatars?.[0]?.avatar || "pfp ideas 🌑.jpg"}
-                  className="h-full w-full rounded-full object-cover"
-                />
+                {users.avatars?.[0]?.avatar && (
+                  <img
+                    src={users.avatars[0].avatar}
+                    alt={users.name}
+                    className="h-full w-full rounded-full object-cover"
+                  />
+                )}
               </div>
               <h2 className="truncate text-sm font-medium text-white">
                 {users.name}
