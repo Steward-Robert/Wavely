@@ -1,4 +1,4 @@
-import { Camera, FileText, LoaderCircle, Users } from "lucide-react";
+import { Camera, FileText, Heart, LoaderCircle, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -192,6 +192,13 @@ function Profil({ user, setUser }) {
       label: "Posts",
       value: postsLoading ? (user?._count?.posts ?? "—") : posts.length,
       icon: FileText,
+    },
+    {
+      label: "Likes received",
+      value: postsLoading || postsError
+        ? "—"
+        : posts.reduce((total, post) => total + (post._count?.likes ?? 0), 0),
+      icon: Heart,
     },
   ];
 

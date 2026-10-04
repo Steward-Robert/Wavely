@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   CalendarDays,
   FileText,
+  Heart,
   Users,
   UserRound,
 } from "lucide-react";
@@ -85,7 +86,15 @@ function UserProfile({ user }) {
       value: profile?.posts?.length ?? profile?._count?.posts ?? 0,
       icon: FileText,
     },
-
+    {
+      label: "Likes received",
+      value:
+        profile?.posts?.reduce(
+          (total, post) => total + (post._count?.likes ?? 0),
+          0,
+        ) ?? 0,
+      icon: Heart,
+    },
     {
       label: "Member since",
       value: profile?.createdAt
