@@ -101,7 +101,6 @@ function Button({ usersId, compact = false }) {
           ) : (
             <>
               <CirclePlus size={compact ? 14 : 16} aria-hidden="true" />
-              <span>Add Friend</span>
             </>
           )}
         </button>

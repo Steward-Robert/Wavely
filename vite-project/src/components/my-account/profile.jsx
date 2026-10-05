@@ -198,7 +198,7 @@ function Profil({ user, setUser }) {
         if (!controller.signal.aborted) {
           console.error("Error loading received likes:", error);
         }
-      })
+      });
 
     return () => controller.abort();
   }, [user?.id]);
@@ -213,7 +213,9 @@ function Profil({ user, setUser }) {
     {
       label: "Likes received",
       value:
-        likesReceived?.userId === user?.id ? likesReceived.total : "—",
+        likesReceived && likesReceived.userId === user?.id
+          ? likesReceived.total
+          : "—",
       icon: Heart,
     },
   ];

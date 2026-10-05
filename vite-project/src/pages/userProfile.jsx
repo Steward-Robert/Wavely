@@ -112,7 +112,9 @@ function UserProfile({ user }) {
     {
       label: "Likes received",
       value:
-        likesReceived?.userId === profile?.id ? likesReceived.total : "—",
+        likesReceived && likesReceived.userId === profile?.id
+          ? likesReceived.total
+          : "—",
       icon: Heart,
     },
     {
