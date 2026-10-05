@@ -106,7 +106,11 @@ function Button({ usersId, compact = false }) {
           )}
         </button>
       )}
-      <FriendB usersId={usersId} compact={compact} />
+      <FriendB
+        usersId={usersId}
+        compact={compact}
+        className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
+      />
       {error && (
         <span role="alert" className="text-xs text-rose-200">
           {error}
