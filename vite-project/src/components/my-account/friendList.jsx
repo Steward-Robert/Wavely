@@ -1,6 +1,15 @@
 import { useFriendships } from "../../context/useFriendships";
 
-function FriendList() {
+function getAvatarUrl(avatar) {
+  if (typeof avatar === "string") return avatar;
+  if (!avatar) return "";
+  if (Array.isArray(avatar)) {
+    return [...avatar].reverse().map(getAvatarUrl).find(Boolean) || "";
+  }
+  return getAvatarUrl(avatar.avatar);
+}
+
+function FriendList({ allUsers = [] }) {
   const { friends, friendsLoading, friendsError } = useFriendships();
 
   return (
@@ -23,8 +32,13 @@ function FriendList() {
           </p>
         )}
         {!friendsLoading && !friendsError && friends.map((friend) => {
+          const userRecord = allUsers.find((user) => user.id === friend.id);
           const avatar =
-            friend.avatar?.avatar || friend.avatars?.[0]?.avatar;
+            getAvatarUrl(friend.avatar) ||
+            getAvatarUrl(friend.avatars) ||
+            getAvatarUrl(userRecord?.avatar) ||
+            getAvatarUrl(userRecord?.avatars) ||
+            "/pfp ideas 🌑.jpg";
 
           return (
             <div
@@ -32,13 +46,14 @@ function FriendList() {
               className="flex flex-col  w-[80px] items-center ml-3 cursor-pointer hover:-translate-y-2.5  duration-500"
             >
               <div className="w-[60px] h-[60px] rounded-full border-2 border-white/40">
-                {avatar && (
-                  <img
-                    src={avatar}
-                    alt={friend.name}
-                    className="object-cover w-full h-full rounded-full"
-                  />
-                )}
+                <img
+                  src={avatar}
+                  alt={`${friend.name || "Friend"}'s profile`}
+                  onError={(event) => {
+                    event.currentTarget.src = "/pfp ideas 🌑.jpg";
+                  }}
+                  className="object-cover w-full h-full rounded-full"
+                />
               </div>
               <p className="text-white w-full text-center truncate text-[14px] mt-1">
                 {friend.name}

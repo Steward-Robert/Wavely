@@ -137,7 +137,9 @@ function App() {
             />
             <Route
               path="account"
-              element={<ProfilAcc user={user} setUser={setUser} />}
+              element={
+                <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
+              }
             />
             <Route path="/user/:userId" element={<UserProfile user={user} />} />
             <Route path="about" element={<AboutWavely />} />

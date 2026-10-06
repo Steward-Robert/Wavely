@@ -1,7 +1,7 @@
 import { ChevronRight, Mail, Phone, User } from "lucide-react";
 import FriendList from "./friendList";
 
-function PersonalInfo({ name, email }) {
+function PersonalInfo({ name, email, allUsers = [] }) {
   return (
     <div className="px-5 py-7 sm:px-8 sm:py-9">
       <section>
@@ -41,7 +41,7 @@ function PersonalInfo({ name, email }) {
             View all <ChevronRight size={14} />
           </button>
         </div>
-        <FriendList />
+        <FriendList allUsers={allUsers} />
       </section>
     </div>
   );

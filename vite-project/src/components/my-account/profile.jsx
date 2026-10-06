@@ -50,7 +50,7 @@ const optimizeImage = (file) =>
     image.src = sourceUrl;
   });
 
-function Profil({ user, setUser }) {
+function Profil({ user, setUser, allUsers = [] }) {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarStatus, setAvatarStatus] = useState("idle");
   const [avatarMessage, setAvatarMessage] = useState("");
@@ -340,6 +340,7 @@ function Profil({ user, setUser }) {
         <PersonalInfo
           name={user?.name || "Unknown"}
           email={user?.email || "no email available"}
+          allUsers={allUsers}
         />
         <ProfilePosts
           title="Your posts"
