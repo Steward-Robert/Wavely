@@ -78,11 +78,16 @@ function Button({ usersId, compact = false }) {
             className={controlClass}
           >
             {loading ? (
-              <span aria-live="polite">Cancelling...</span>
+              <>
+                <X size={compact ? 14 : 16} aria-hidden="true" />
+                <span className="sr-only" aria-live="polite">
+                  Cancelling request
+                </span>
+              </>
             ) : (
               <>
                 <X size={compact ? 14 : 16} aria-hidden="true" />
-                <span>Cancel Request</span>
+                <span className="hidden sm:inline">Cancel Request</span>
               </>
             )}
           </button>

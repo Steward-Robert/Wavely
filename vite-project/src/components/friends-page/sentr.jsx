@@ -1,7 +1,8 @@
 import { useFriendships } from "../../context/useFriendships";
 import Button from "../addFriendsbutton.jsx";
+import VerifiedBadge from "../VerifiedBadge.jsx";
 
-function SentR({ searchTerm = "" }) {
+function SentR({ searchTerm = "", allUsers = [] }) {
   const { sentRequests, requestsLoading, requestsError } = useFriendships();
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const matchingRequests = sentRequests.filter((request) =>
@@ -37,9 +38,14 @@ function SentR({ searchTerm = "" }) {
                   />
                 )}
               </div>
-              <h2 className="truncate text-sm font-medium text-white">
-                {sent.receiver?.name}
-              </h2>
+              <div className="flex min-w-0 items-center gap-1.5">
+                <h2 className="truncate text-sm font-medium text-white">
+                  {sent.receiver?.name}
+                </h2>
+                {(sent.receiver?.role ||
+                  allUsers.find((user) => user.id === sent.receiverId)?.role) ===
+                  "ADMIN" && <VerifiedBadge className="h-4 w-4 shrink-0" />}
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-4">
               <Button usersId={sent.receiverId} />

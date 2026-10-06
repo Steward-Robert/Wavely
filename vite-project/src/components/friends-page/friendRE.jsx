@@ -1,7 +1,8 @@
 import FriendRB from "../button/friendRButton";
 import { useFriendships } from "../../context/useFriendships";
+import VerifiedBadge from "../VerifiedBadge.jsx";
 
-function FQ({ searchTerm = "" }) {
+function FQ({ searchTerm = "", allUsers = [] }) {
   const {
     receivedRequests: requests,
     requestsLoading,
@@ -43,9 +44,14 @@ function FQ({ searchTerm = "" }) {
                   />
                 )}
               </div>
-              <h2 className="truncate text-sm font-medium text-white">
-                {re.sender?.name}
-              </h2>
+              <div className="flex min-w-0 items-center gap-1.5">
+                <h2 className="truncate text-sm font-medium text-white">
+                  {re.sender?.name}
+                </h2>
+                {(re.sender?.role ||
+                  allUsers.find((user) => user.id === re.senderId)?.role) ===
+                  "ADMIN" && <VerifiedBadge className="h-4 w-4 shrink-0" />}
+              </div>
             </div>
 
             <FriendRB

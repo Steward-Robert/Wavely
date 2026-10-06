@@ -11,6 +11,7 @@ function Feed({ user, alluser }) {
   const [showComment, setShowComment] = useState(false);
   const [commentPostId, setCommentPostId] = useState(null);
   const [commentCounts, setCommentCounts] = useState({});
+  const [storyRefreshKey, setStoryRefreshKey] = useState(0);
 
   const openComments = (postId) => {
     setCommentPostId(postId);
@@ -29,8 +30,11 @@ function Feed({ user, alluser }) {
       <Header user={user} />
       <RSidebar alluser={alluser} />
       <LSidebar />
-      <Stories />
-      <ShareSM user={user} />
+      <Stories alluser={alluser} refreshKey={storyRefreshKey} />
+      <ShareSM
+        user={user}
+        onStoryUploaded={() => setStoryRefreshKey((key) => key + 1)}
+      />
       <div className="mx-auto my-7 w-[80vw] lg:w-[45vw]">
         <div aria-hidden="true" className="flex flex-col gap-2">
           <span className="h-px w-full bg-gradient-to-r from-white/20 to-transparent" />

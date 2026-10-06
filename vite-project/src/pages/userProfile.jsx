@@ -158,7 +158,7 @@ function UserProfile({ user }) {
                 Community profile
               </p>
               <div className="mt-5 flex flex-col items-center gap-5 sm:flex-row">
-                <div className="h-28 w-28 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
+                <div className="h-34 w-34 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
                   <img
                     src={profile.avatars?.at(-1)?.avatar || "/pfp ideas 🌑.jpg"}
                     alt={`${profile.name}'s profile`}

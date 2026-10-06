@@ -18,6 +18,7 @@ import ContactSupport from "./pages/contactSupport.jsx";
 import AdminDashboard from "./pages/adminDashboard.jsx";
 import axios from "axios";
 import { Navigate } from "react-router";
+import SavedPosts from "./pages/savedPosts.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -115,9 +116,13 @@ function App() {
             <Route path="pst" element={<Post user={user} />} />
             <Route
               path="/stories"
-              element={<ShowStories />}
+              element={<ShowStories alluser={alluser} />}
               showStory={showStory}
               setShowStory={setShowStory}
+            />
+            <Route
+              path="/saved"
+              element={<SavedPosts alluser={alluser} />}
             />
             <Route
               path="settigns"

@@ -1,4 +1,5 @@
 import Button from "../addFriendsbutton";
+import VerifiedBadge from "../VerifiedBadge.jsx";
 
 function PeopleYouMK({ allUser, searchTerm = "" }) {
   const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -24,9 +25,14 @@ function PeopleYouMK({ allUser, searchTerm = "" }) {
                   />
                 )}
               </div>
-              <h2 className="truncate text-sm font-medium text-white">
-                {users.name}
-              </h2>
+              <div className="flex min-w-0 items-center gap-1.5">
+                <h2 className="truncate text-sm font-medium text-white">
+                  {users.name}
+                </h2>
+                {users.role === "ADMIN" && (
+                  <VerifiedBadge className="h-4 w-4 shrink-0" />
+                )}
+              </div>
             </div>
 
             <Button usersId={users.id} />

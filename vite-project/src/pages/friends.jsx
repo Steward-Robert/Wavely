@@ -20,9 +20,9 @@ function FriendsPage({ allUser }) {
           <FriendMenu activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
 
           {activeMenu === "people" && <FriendInfo allUser={allUser} />}
-          {activeMenu === "sent" && <SentRequest />}
-          {activeMenu == "friends" && <MyFriends />}
-          {activeMenu == "received" && <FriendREQ />}
+          {activeMenu === "sent" && <SentRequest allUser={allUser} />}
+          {activeMenu == "friends" && <MyFriends allUser={allUser} />}
+          {activeMenu == "received" && <FriendREQ allUser={allUser} />}
         </div>
       </main>
     </>

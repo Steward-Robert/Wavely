@@ -1,7 +1,7 @@
 import SentR from "./sentr";
 import { useState } from "react";
 
-function SentRequest() {
+function SentRequest({ allUser = [] }) {
   const [searchTerm, setSearchTerm] = useState("");
 
   return (
@@ -18,7 +18,7 @@ function SentRequest() {
         className="mb-4 h-11 w-full rounded-xl border border-white/15 bg-black/25 px-4 text-sm text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] outline-none backdrop-blur-xl transition placeholder:text-slate-400 focus:border-amber-100/45 focus:ring-2 focus:ring-amber-100/10"
       />
       <div className="divide-y divide-white/8 lg:px-13 px-5">
-        <SentR searchTerm={searchTerm} />
+        <SentR searchTerm={searchTerm} allUsers={allUser} />
       </div>
     </section>
   );

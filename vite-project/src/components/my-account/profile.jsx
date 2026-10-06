@@ -250,7 +250,7 @@ function Profil({ user, setUser }) {
             Your space
           </p>
           <div className="relative mt-5 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
-            <div className="relative h-32 w-32 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
+            <div className="relative h-34 w-34 shrink-0 rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)] sm:h-32 sm:w-32">
               <img
                 src={
                   avatarPreview ??
@@ -277,7 +277,7 @@ function Profil({ user, setUser }) {
               <button
                 type="button"
                 aria-label="Change profile photo"
-                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-amber-100/50 bg-amber-300 text-[#211a0b] shadow-lg transition duration-700 hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-cyan-200/35 p-1 shadow-[0_0_35px_rgba(103,232,249,0.14)]focus:outline-none focus:ring-2 focus:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-50 bg-black/70"
                 onClick={handleChangeProfile}
                 disabled={loading}
               >
@@ -305,8 +305,8 @@ function Profil({ user, setUser }) {
                   : "user"}
               </p>
               <p className="mt-3 max-w-sm text-sm leading-6 text-slate-300">
-                Sharing moments, meeting people, and staying close to my
-                community.
+                Sharing moments, meeting people, staying close to your community
+                and have fun .
               </p>
               {avatarMessage && !loading && (
                 <div

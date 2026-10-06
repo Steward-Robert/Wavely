@@ -1,8 +1,8 @@
 import { Heart, Bookmark, MessageCircle } from "lucide-react";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import FriendB from "../button/friendButton.jsx";
+import api from "../../services/api.js";
 
 function Foryou({
   onOpenComments,
@@ -11,6 +11,10 @@ function Foryou({
   const [allPost, setAllPost] = useState([]);
   const [likePending, setLikePending] = useState({});
   const [likeError, setLikeError] = useState("");
+  const [savedPostIds, setSavedPostIds] = useState(() => new Set());
+  const [savedStatusLoaded, setSavedStatusLoaded] = useState(false);
+  const [savingPostIds, setSavingPostIds] = useState(() => new Set());
+  const [saveError, setSaveError] = useState("");
 
   const showVideoPreview = (event) => {
     const preview = event.currentTarget;
@@ -23,15 +27,14 @@ function Foryou({
     if (likePending[post.id]) return;
 
     const likedByUser = Boolean(post.likedByUser);
-    const url = `https://wavely-backend-7ryc.onrender.com/api/like/${encodeURIComponent(post.id)}`;
     setLikePending((current) => ({ ...current, [post.id]: true }));
     setLikeError("");
 
     try {
       if (likedByUser) {
-        await axios.delete(url, { withCredentials: true });
+        await api.delete(`/like/${encodeURIComponent(post.id)}`);
       } else {
-        await axios.post(url, {}, { withCredentials: true });
+        await api.post(`/like/${encodeURIComponent(post.id)}`, {});
       }
 
       setAllPost((currentPosts) =>
@@ -59,25 +62,70 @@ function Foryou({
     }
   };
 
+  const handleSave = async (post) => {
+    if (savingPostIds.has(post.id)) return;
+    const isSaved = savedPostIds.has(post.id);
+    setSavingPostIds((current) => new Set(current).add(post.id));
+    setSaveError("");
+
+    try {
+      const postPath = `/savedPost/${encodeURIComponent(post.id)}`;
+      if (isSaved) {
+        await api.delete(postPath);
+        setSavedPostIds((current) => {
+          const next = new Set(current);
+          next.delete(post.id);
+          return next;
+        });
+      } else {
+        await api.post(postPath, {});
+        setSavedPostIds((current) => new Set(current).add(post.id));
+      }
+    } catch (requestError) {
+      console.error("Error updating saved post:", requestError);
+      setSaveError(
+        requestError.response?.data?.message ||
+          "Could not update your saved posts. Please try again.",
+      );
+    } finally {
+      setSavingPostIds((current) => {
+        const next = new Set(current);
+        next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(
-          "https://wavely-backend-7ryc.onrender.com/api/post",
-          {
-            withCredentials: true,
-          },
-        );
-
-        console.log("Posts:", response.data.posts);
-
-        setAllPost(response.data.posts);
+        const response = await api.get("/post");
+        setAllPost(Array.isArray(response.data.posts) ? response.data.posts : []);
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
     };
 
+    const fetchSavedPostIds = async () => {
+      try {
+        const response = await api.get("/savedPost/saved");
+        const savedPosts = Array.isArray(response.data.savedPosts)
+          ? response.data.savedPosts
+          : [];
+        setSavedPostIds(new Set(savedPosts.map((saved) => saved.postID)));
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+        setSaveError(
+          error.response?.data?.message ||
+            "Saved-post status could not be loaded.",
+        );
+      } finally {
+        setSavedStatusLoaded(true);
+      }
+    };
+
     fetchPosts();
+    fetchSavedPostIds();
   }, []);
 
   return (
@@ -88,6 +136,14 @@ function Foryou({
           className="mx-auto my-3 w-[98vw] text-sm text-rose-200 md:w-[70vw] lg:w-[45vw]"
         >
           {likeError}
+        </p>
+      )}
+      {saveError && (
+        <p
+          role="alert"
+          className="mx-auto my-3 w-[98vw] text-sm text-rose-200 md:w-[70vw] lg:w-[45vw]"
+        >
+          {saveError}
         </p>
       )}
       {allPost.map((post) => {
@@ -210,9 +266,13 @@ function Foryou({
                 {/* BOOKMARK */}
                 <button
                   type="button"
-                  className="rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300"
+                  onClick={() => handleSave(post)}
+                  disabled={!savedStatusLoaded || savingPostIds.has(post.id)}
+                  aria-pressed={savedPostIds.has(post.id)}
+                  aria-label={savedPostIds.has(post.id) ? "Remove from saved posts" : "Save post"}
+                  className={`rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300 disabled:cursor-wait disabled:opacity-60 ${savedPostIds.has(post.id) ? "text-amber-300" : ""}`}
                 >
-                  <Bookmark size={24} />
+                  <Bookmark size={24} fill={savedPostIds.has(post.id) ? "currentColor" : "none"} />
                 </button>
               </div>
             </article>

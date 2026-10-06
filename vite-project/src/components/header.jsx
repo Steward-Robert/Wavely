@@ -15,7 +15,7 @@ import UserContext from "../context/UserContext.jsx";
 const menuItems = [
   { label: "Home", path: "/feeds", icon: Home },
   { label: "Friends", path: "/fr", icon: Users },
-  { label: "Saved", icon: Bookmark },
+  { label: "Saved", path: "/saved", icon: Bookmark },
   { label: "Create a post", path: "/pst", icon: Plus },
   { label: "Messages", icon: MessageCircle },
   { label: "Notifications", icon: Bell },

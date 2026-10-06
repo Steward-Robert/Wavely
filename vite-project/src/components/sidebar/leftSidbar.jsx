@@ -14,7 +14,7 @@ const navItems = [
   { label: "Home", path: "/feeds", icon: Home },
   { label: "Friends", path: "/fr", icon: User },
   { label: "Create a post", path: "/pst", icon: Plus },
-  { label: "Saved", path: null, icon: Bookmark },
+  { label: "Saved", path: "/saved", icon: Bookmark },
   { label: "Settings", path: "/settigns", icon: Settings },
 ];
 
