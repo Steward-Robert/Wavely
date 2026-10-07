@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import PostMediaCarousel from "../PostMediaCarousel.jsx";
 import getPostMedia from "../../utils/postMedia.js";
-
-const showVideoPreview = (event) => {
-  const preview = event.currentTarget;
-  if (Number.isFinite(preview.duration) && preview.duration > 0) {
-    preview.currentTime = Math.min(0.5, preview.duration / 2);
-  }
-};
 
 function ProfilePosts({
   posts = [],
@@ -93,27 +87,10 @@ function ProfilePosts({
                   </button>
                 )}
               </div>
-              {getPostMedia(post).map((media) =>
-                media.mediaType === "video" ? (
-                  <video
-                    key={media.id}
-                    src={media.url}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    onLoadedMetadata={showVideoPreview}
-                    className="aspect-video w-full bg-black object-cover"
-                  />
-                ) : (
-                  <img
-                    key={media.id}
-                    src={media.url}
-                    alt="Post attachment"
-                    loading="lazy"
-                    className="aspect-video w-full bg-black object-cover"
-                  />
-                ),
-              )}
+              <PostMediaCarousel
+                mediaItems={getPostMedia(post)}
+                mediaClassName="aspect-video w-full bg-black object-cover"
+              />
               <p className="px-3 pb-3 text-[11px] text-slate-500">
                 {post.createdAt
                   ? new Date(post.createdAt).toLocaleDateString()

@@ -2,6 +2,7 @@ import { Heart, Bookmark, MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import FriendB from "../button/friendButton.jsx";
+import PostMediaCarousel from "../PostMediaCarousel.jsx";
 import api from "../../services/api.js";
 import getPostMedia from "../../utils/postMedia.js";
 
@@ -17,13 +18,6 @@ function Foryou({
   const [savingPostIds, setSavingPostIds] = useState(() => new Set());
   const [saveError, setSaveError] = useState("");
   const requestsRef = useRef(null);
-
-  const showVideoPreview = (event) => {
-    const preview = event.currentTarget;
-    if (Number.isFinite(preview.duration) && preview.duration > 0) {
-      preview.currentTime = Math.min(0.5, preview.duration / 2);
-    }
-  };
 
   const handleLike = async (post) => {
     if (likePending[post.id]) return;
@@ -170,12 +164,11 @@ function Foryou({
       )}
       <div
         aria-label="Posts"
-        className="mx-auto h-[min(75svh,52rem)] min-h-[20rem] w-full snap-y snap-mandatory overflow-y-auto scroll-smooth overscroll-y-auto"
+        className="mx-auto w-full"
         role="region"
-        tabIndex={0}
       >
         {allPost.length === 0 ? (
-          <p className="mx-auto flex h-full w-[98vw] items-center justify-center text-center text-sm text-gray-400 md:w-[70vw] lg:w-[45vw]">
+          <p className="mx-auto flex w-[98vw] items-center justify-center py-10 text-center text-sm text-gray-400 md:w-[70vw] lg:w-[45vw]">
             No posts to show yet.
           </p>
         ) : (
@@ -186,9 +179,9 @@ function Foryou({
             return (
               <main
                 key={post.id}
-                className="mx-auto flex min-h-full w-[98vw] snap-start items-center justify-center py-3 sm:mx-auto md:mx-auto md:w-[70vw] lg:w-[45vw]"
+                className="mx-auto flex w-[98vw] items-center justify-center py-3 sm:mx-auto md:mx-auto md:w-[70vw] lg:w-[45vw]"
               >
-                <article className="overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150">
+                <article className="w-full overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150">
                   {/* HEADER */}
                   <header className="flex items-center justify-between gap-4 text-amber-50">
                     <div className="flex gap-2">
@@ -236,32 +229,11 @@ function Foryou({
 
                   {/* MEDIA */}
                   {mediaItems.length > 0 && (
-                    <div className="mt-4 border">
-                      {mediaItems.map((media) => (
-                        <div
-                          key={media.id}
-                          className="mb-3 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 last:mb-0 sm:mx-auto sm:block sm:w-[70vw] md:w-[50vw] lg:w-[40vw]"
-                        >
-                          {media.mediaType === "video" ? (
-                            <video
-                              src={media.url}
-                              controls
-                              playsInline
-                              preload="metadata"
-                              onLoadedMetadata={showVideoPreview}
-                              className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
-                            />
-                          ) : (
-                            <img
-                              src={media.url}
-                              alt="Post"
-                              loading="lazy"
-                              className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
-                            />
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    <PostMediaCarousel
+                      mediaItems={mediaItems}
+                      className="mt-4 rounded-[22px] border border-white/10 shadow-inner shadow-black/20 sm:mx-auto sm:w-[70vw] md:w-[50vw] lg:w-[40vw]"
+                      mediaClassName="max-h-[600px] w-full object-contain"
+                    />
                   )}
 
                   {/* ACTIONS */}

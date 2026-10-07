@@ -8,6 +8,7 @@ import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import api from "../services/api.js";
 import UserContext from "../context/UserContext.jsx";
 import Comment from "../components/feeds/comment.jsx";
+import PostMediaCarousel from "../components/PostMediaCarousel.jsx";
 import getPostMedia from "../utils/postMedia.js";
 
 const formatDate = (date) =>
@@ -239,28 +240,10 @@ function SavedPosts({ alluser = [] }) {
                   </p>
                 )}
                 {getPostMedia(post).length > 0 && (
-                  <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/20">
-                    {getPostMedia(post).map((media) =>
-                      media.mediaType === "video" ? (
-                        <video
-                          key={media.id}
-                          src={media.url}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          className="max-h-[600px] w-full object-contain"
-                        />
-                      ) : (
-                        <img
-                          key={media.id}
-                          src={media.url}
-                          alt="Post"
-                          loading="lazy"
-                          className="max-h-[600px] w-full object-contain"
-                        />
-                      ),
-                    )}
-                  </div>
+                  <PostMediaCarousel
+                    mediaItems={getPostMedia(post)}
+                    className="mt-4 rounded-[22px] border border-white/10"
+                  />
                 )}
                 <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-slate-400">
                   <button
