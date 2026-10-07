@@ -2,18 +2,13 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Render deployment
+## API configuration
 
-The production frontend uses `/api` so authentication cookies remain same-origin.
-In the Render Static Site dashboard, add a **Rewrite** rule:
-
-- Source: `/api/*`
-- Destination: `https://wavely-backend-7ryc.onrender.com/api/*`
-- Action: `Rewrite`
-
-If `VITE_API_URL` is set for the frontend, set it to `/api` (or remove it to use
-the production default). Local development continues to call the backend URL
-directly.
+The frontend calls `https://wavely-backend-7ryc.onrender.com/api` by default.
+Set `VITE_API_URL` to an absolute API URL to use a different backend. Relative
+API URLs are ignored in production because the static frontend host does not
+serve the backend API. The backend must allow the frontend origin and
+credentialed requests for authentication cookies to work.
 
 Currently, two official plugins are available:
 
