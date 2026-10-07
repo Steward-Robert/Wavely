@@ -70,7 +70,7 @@ function Register({ setIsLogin, onAuthenticated }) {
           withCredentials: true,
         },
       );
-      onAuthenticated();
+      await onAuthenticated();
       navigate("/feeds");
       console.log(response.data);
     } catch (requestError) {

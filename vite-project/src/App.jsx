@@ -4,7 +4,7 @@ import { FriendshipProvider } from "./context/FriendshipContext.jsx";
 import "./styles/App.css";
 import Loader from "./components/loader.jsx";
 import Welcome from "../src/pages/welcome.jsx";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
@@ -23,14 +23,39 @@ import SavedPosts from "./pages/savedPosts.jsx";
 function App() {
   const [loading, setLoading] = useState(true);
   const [isloading, setIsLoading] = useState(false);
-  const [showStory, setShowStory] = useState([]);
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [alluser, setAllUser] = useState([]);
-  const [authVersion, setAuthVersion] = useState(0);
+  const authRequestId = useRef(0);
 
-  const refreshAfterAuthentication = () => {
-    setAuthVersion((version) => version + 1);
-  };
+  const loadAuthenticatedUser = useCallback(async () => {
+    const requestId = ++authRequestId.current;
+
+    try {
+      const response = await axios.get(
+        "https://wavely-backend-7ryc.onrender.com/api/me",
+        {
+          withCredentials: true,
+        },
+      );
+      const authenticatedUser = response.data.user;
+
+      if (!authenticatedUser) {
+        throw new Error("The authenticated user could not be loaded.");
+      }
+      if (requestId === authRequestId.current) setUser(authenticatedUser);
+      return authenticatedUser;
+    } catch (error) {
+      if (requestId === authRequestId.current) setUser(null);
+      throw error;
+    } finally {
+      if (requestId === authRequestId.current) setAuthLoading(false);
+    }
+  }, []);
+  const refreshAfterAuthentication = useCallback(() => {
+    setAuthLoading(true);
+    return loadAuthenticatedUser();
+  }, [loadAuthenticatedUser]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,32 +66,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    let isCurrent = true;
-
-    const loadUser = async () => {
-      try {
-        const response = await axios.get(
-          "https://wavely-backend-7ryc.onrender.com/api/me",
-          {
-            withCredentials: true,
-          },
-        );
-        if (isCurrent) setUser(response.data.user);
-      } catch {
-        if (isCurrent) setUser(null);
+    loadAuthenticatedUser().catch((error) => {
+      if (error.response?.status !== 401) {
+        console.error("Error verifying authentication:", error);
       }
-    };
-
-    loadUser();
-    return () => {
-      isCurrent = false;
-    };
-  }, [authVersion]);
+    });
+  }, [loadAuthenticatedUser]);
 
   useEffect(() => {
     let isCurrent = true;
 
     const loadAllUser = async () => {
+      if (!user) {
+        setAllUser([]);
+        return;
+      }
+
       try {
         const response = await axios.get(
           "https://wavely-backend-7ryc.onrender.com/api/users",
@@ -88,7 +103,7 @@ function App() {
     return () => {
       isCurrent = false;
     };
-  }, [authVersion]);
+  }, [user]);
 
   return (
     <UserContext.Provider value={user}>
@@ -107,52 +122,100 @@ function App() {
             />
             <Route
               path="/feeds"
-              element={<Feed user={user} alluser={alluser} />}
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <Feed user={user} alluser={alluser} />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/fr"
-              element={<FriendsPage allUser={alluser} />}
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <FriendsPage allUser={alluser} />
+                </ProtectedRoute>
+              }
             />
-            <Route path="pst" element={<Post user={user} />} />
+            <Route
+              path="pst"
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <Post user={user} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/stories"
-              element={<ShowStories alluser={alluser} />}
-              showStory={showStory}
-              setShowStory={setShowStory}
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <ShowStories alluser={alluser} />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/saved"
-              element={<SavedPosts alluser={alluser} />}
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <SavedPosts alluser={alluser} />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="settigns"
               element={
-                <Settings
-                  isloading={isloading}
-                  setIsLoading={setIsLoading}
-                  user={user}
-                  setUser={setUser}
-                />
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <Settings
+                    isloading={isloading}
+                    setIsLoading={setIsLoading}
+                    user={user}
+                    setUser={setUser}
+                  />
+                </ProtectedRoute>
               }
             />
             <Route
               path="account"
               element={
-                <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
+                </ProtectedRoute>
               }
             />
-            <Route path="/user/:userId" element={<UserProfile user={user} />} />
+            <Route
+              path="/user/:userId"
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <UserProfile user={user} />
+                </ProtectedRoute>
+              }
+            />
             <Route path="about" element={<AboutWavely />} />
-            <Route path="/report" element={<ReportProblem />} />
-            <Route path="/contact-support" element={<ContactSupport />} />
+            <Route
+              path="/report"
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <ReportProblem />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/contact-support"
+              element={
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  <ContactSupport />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={
-                user?.role === "ADMIN" ? (
-                  <AdminDashboard user={user} />
-                ) : (
-                  <Navigate to="/feeds" replace />
-                )
+                <ProtectedRoute authLoading={authLoading} user={user}>
+                  {user?.role === "ADMIN" ? (
+                    <AdminDashboard user={user} />
+                  ) : (
+                    <Navigate to="/feeds" replace />
+                  )}
+                </ProtectedRoute>
               }
             />
           </Routes>
@@ -160,6 +223,11 @@ function App() {
       </FriendshipProvider>
     </UserContext.Provider>
   );
+}
+
+function ProtectedRoute({ authLoading, user, children }) {
+  if (authLoading) return <Loader />;
+  return user ? children : <Navigate to="/" replace />;
 }
 
 export default App;

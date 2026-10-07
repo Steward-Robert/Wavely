@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import FriendB from "../button/friendButton.jsx";
 import api from "../../services/api.js";
+import getPostMedia from "../../utils/postMedia.js";
 
 function Foryou({
   onOpenComments,
@@ -148,6 +149,7 @@ function Foryou({
       )}
       {allPost.map((post) => {
         const avatarUrl = post.author?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
+        const mediaItems = getPostMedia(post);
 
         return (
           <main
@@ -201,27 +203,32 @@ function Foryou({
               )}
 
               {/* MEDIA */}
-              {post.image && (
+              {mediaItems.length > 0 && (
                 <div className="mt-4 border">
-                  <div className="overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 sm:mx-auto sm:block sm:w-[70vw] md:w-[50vw] lg:w-[40vw]">
-                    {post.mediaType === "video" ? (
-                      <video
-                        src={post.image}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        onLoadedMetadata={showVideoPreview}
-                        className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
-                      />
-                    ) : (
-                      <img
-                        src={post.image}
-                        alt="Post"
-                        loading="lazy"
-                        className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
-                      />
-                    )}
-                  </div>
+                  {mediaItems.map((media) => (
+                    <div
+                      key={media.id}
+                      className="mb-3 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 last:mb-0 sm:mx-auto sm:block sm:w-[70vw] md:w-[50vw] lg:w-[40vw]"
+                    >
+                      {media.mediaType === "video" ? (
+                        <video
+                          src={media.url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          onLoadedMetadata={showVideoPreview}
+                          className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
+                        />
+                      ) : (
+                        <img
+                          src={media.url}
+                          alt="Post"
+                          loading="lazy"
+                          className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import getPostMedia from "../../utils/postMedia.js";
 
 const showVideoPreview = (event) => {
   const preview = event.currentTarget;
@@ -92,10 +93,11 @@ function ProfilePosts({
                   </button>
                 )}
               </div>
-              {post.image &&
-                (post.mediaType === "video" ? (
+              {getPostMedia(post).map((media) =>
+                media.mediaType === "video" ? (
                   <video
-                    src={post.image}
+                    key={media.id}
+                    src={media.url}
                     controls
                     playsInline
                     preload="metadata"
@@ -104,12 +106,14 @@ function ProfilePosts({
                   />
                 ) : (
                   <img
-                    src={post.image}
+                    key={media.id}
+                    src={media.url}
                     alt="Post attachment"
                     loading="lazy"
                     className="aspect-video w-full bg-black object-cover"
                   />
-                ))}
+                ),
+              )}
               <p className="px-3 pb-3 text-[11px] text-slate-500">
                 {post.createdAt
                   ? new Date(post.createdAt).toLocaleDateString()

@@ -8,6 +8,7 @@ import VerifiedBadge from "../components/VerifiedBadge.jsx";
 import api from "../services/api.js";
 import UserContext from "../context/UserContext.jsx";
 import Comment from "../components/feeds/comment.jsx";
+import getPostMedia from "../utils/postMedia.js";
 
 const formatDate = (date) =>
   date
@@ -237,23 +238,27 @@ function SavedPosts({ alluser = [] }) {
                     {post.content}
                   </p>
                 )}
-                {post.image && (
+                {getPostMedia(post).length > 0 && (
                   <div className="mt-4 overflow-hidden rounded-[22px] border border-white/10 bg-black/20">
-                    {post.mediaType === "video" ? (
-                      <video
-                        src={post.image}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        className="max-h-[600px] w-full object-contain"
-                      />
-                    ) : (
-                      <img
-                        src={post.image}
-                        alt="Post"
-                        loading="lazy"
-                        className="max-h-[600px] w-full object-contain"
-                      />
+                    {getPostMedia(post).map((media) =>
+                      media.mediaType === "video" ? (
+                        <video
+                          key={media.id}
+                          src={media.url}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="max-h-[600px] w-full object-contain"
+                        />
+                      ) : (
+                        <img
+                          key={media.id}
+                          src={media.url}
+                          alt="Post"
+                          loading="lazy"
+                          className="max-h-[600px] w-full object-contain"
+                        />
+                      ),
                     )}
                   </div>
                 )}
