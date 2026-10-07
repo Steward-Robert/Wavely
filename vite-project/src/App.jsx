@@ -4,13 +4,8 @@ import { FriendshipProvider } from "./context/FriendshipContext.jsx";
 import "./styles/App.css";
 import Loader from "./components/loader.jsx";
 import Welcome from "../src/pages/welcome.jsx";
-<<<<<<< HEAD
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router";
-=======
-import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
 import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
 import Post from "./pages/post.jsx";
@@ -51,21 +46,9 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
 
   const [isloading, setIsLoading] = useState(false);
-<<<<<<< HEAD
-=======
-  const [showStory, setShowStory] = useState([]);
-
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [alluser, setAllUser] = useState([]);
-<<<<<<< HEAD
   const authRequestId = useRef(0);
-=======
-
-  // Used when authentication changes after login/logout
-  const [authVersion, setAuthVersion] = useState(0);
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
 
   const loadAuthenticatedUser = useCallback(async () => {
     const requestId = ++authRequestId.current;
@@ -118,48 +101,12 @@ function App() {
    * has finished.
    */
   useEffect(() => {
-<<<<<<< HEAD
     loadAuthenticatedUser().catch((error) => {
       if (error.response?.status !== 401) {
         console.error("Error verifying authentication:", error);
       }
     });
   }, [loadAuthenticatedUser]);
-=======
-    let isCurrent = true;
-
-    const loadUser = async () => {
-      setAuthLoading(true);
-
-      try {
-        const response = await axios.get(
-          "https://wavely-backend-7ryc.onrender.com/api/me",
-          {
-            withCredentials: true,
-          }
-        );
-
-        if (isCurrent) {
-          setUser(response.data.user);
-        }
-      } catch (error) {
-        if (isCurrent) {
-          setUser(null);
-        }
-      } finally {
-        if (isCurrent) {
-          setAuthLoading(false);
-        }
-      }
-    };
-
-    loadUser();
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [authVersion]);
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
 
   /*
    * Load users ONLY after authentication has been confirmed.
@@ -171,15 +118,12 @@ function App() {
     let isCurrent = true;
 
     const loadAllUser = async () => {
-<<<<<<< HEAD
-=======
       // Do nothing while authentication is being checked
       if (authLoading) {
         return;
       }
 
       // Do not request users if nobody is authenticated
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
       if (!user) {
         setAllUser([]);
         return;
@@ -209,11 +153,7 @@ function App() {
     return () => {
       isCurrent = false;
     };
-<<<<<<< HEAD
-  }, [user]);
-=======
-  }, [user, authLoading, authVersion]);
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
+  }, [user, authLoading]);
 
   return (
     <UserContext.Provider value={user}>
@@ -248,10 +188,6 @@ function App() {
             <Route
               path="/feeds"
               element={
-<<<<<<< HEAD
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <Feed user={user} alluser={alluser} />
-=======
                 <ProtectedRoute
                   user={user}
                   authLoading={authLoading}
@@ -260,7 +196,6 @@ function App() {
                     user={user}
                     alluser={alluser}
                   />
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                 </ProtectedRoute>
               }
             />
@@ -268,26 +203,6 @@ function App() {
             <Route
               path="/fr"
               element={
-<<<<<<< HEAD
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <FriendsPage allUser={alluser} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="pst"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <Post user={user} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/stories"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <ShowStories alluser={alluser} />
-=======
                 <ProtectedRoute
                   user={user}
                   authLoading={authLoading}
@@ -320,33 +235,13 @@ function App() {
                 >
                   <ShowStories
                     alluser={alluser}
-                    showStory={showStory}
-                    setShowStory={setShowStory}
                   />
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                 </ProtectedRoute>
               }
             />
 
             <Route
               path="/saved"
-<<<<<<< HEAD
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <SavedPosts alluser={alluser} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="settigns"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <Settings
-                    isloading={isloading}
-                    setIsLoading={setIsLoading}
-                    user={user}
-                    setUser={setUser}
-=======
               element={
                 <ProtectedRoute
                   user={user}
@@ -354,7 +249,6 @@ function App() {
                 >
                   <SavedPosts
                     alluser={alluser}
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                   />
                 </ProtectedRoute>
               }
@@ -363,26 +257,6 @@ function App() {
             <Route
               path="/settigns"
               element={
-<<<<<<< HEAD
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/user/:userId"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-                  <UserProfile user={user} />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="about" element={<AboutWavely />} />
-            <Route
-              path="/report"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-=======
                 <ProtectedRoute
                   user={user}
                   authLoading={authLoading}
@@ -432,17 +306,10 @@ function App() {
                   user={user}
                   authLoading={authLoading}
                 >
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                   <ReportProblem />
                 </ProtectedRoute>
               }
             />
-<<<<<<< HEAD
-            <Route
-              path="/contact-support"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-=======
 
             <Route
               path="/contact-support"
@@ -451,17 +318,10 @@ function App() {
                   user={user}
                   authLoading={authLoading}
                 >
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                   <ContactSupport />
                 </ProtectedRoute>
               }
             />
-<<<<<<< HEAD
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute authLoading={authLoading} user={user}>
-=======
 
             {/* =====================================================
                 ADMIN ROUTE
@@ -474,7 +334,6 @@ function App() {
                   user={user}
                   authLoading={authLoading}
                 >
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
                   {user?.role === "ADMIN" ? (
                     <AdminDashboard user={user} />
                   ) : (
@@ -509,13 +368,4 @@ function App() {
   );
 }
 
-<<<<<<< HEAD
-function ProtectedRoute({ authLoading, user, children }) {
-  if (authLoading) return <Loader />;
-  return user ? children : <Navigate to="/" replace />;
-}
-
 export default App;
-=======
-export default App;
->>>>>>> 4e3914dd208ae47bd7a89e0f6b17a432a103c249
