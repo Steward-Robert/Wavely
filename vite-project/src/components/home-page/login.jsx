@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { AlertCircle, EyeClosed, Eye, Mail, KeyRound } from "lucide-react";
-import axios from "axios";
 import { useNavigate } from "react-router";
 import { getAuthErrorMessage } from "./auth-error";
 import Loader from "../loader";
+import api from "../../services/api.js";
 
 function Login({ setIsLogin, onAuthenticated }) {
   const navigate = useNavigate();
@@ -34,21 +34,27 @@ function Login({ setIsLogin, onAuthenticated }) {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "https://wavely-backend-7ryc.onrender.com/api/auth/login",
-        {
-          email: userEmail,
-          password: userPassword,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      await onAuthenticated();
-      navigate("/feeds");
-      console.log(response.data);
+      await api.post("/auth/login", {
+        email: userEmail,
+        password: userPassword,
+      });
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError, "login"));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await onAuthenticated();
+      navigate("/feeds");
+    } catch (verificationError) {
+      console.error(
+        "Login succeeded but session verification failed:",
+        verificationError,
+      );
+      setError(
+        "Your login succeeded, but Wavely couldn't verify your session. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

@@ -7,10 +7,10 @@ import {
   Mail,
 } from "lucide-react";
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router";
 import { getAuthErrorMessage } from "./auth-error";
 import Loader from "../loader";
+import api from "../../services/api.js";
 
 function Register({ setIsLogin, onAuthenticated }) {
   const navigate = useNavigate();
@@ -59,22 +59,28 @@ function Register({ setIsLogin, onAuthenticated }) {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "https://wavely-backend-7ryc.onrender.com/api/auth/register",
-        {
-          name: userName,
-          email: userEmail,
-          password: userPassword,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      await onAuthenticated();
-      navigate("/feeds");
-      console.log(response.data);
+      await api.post("/auth/register", {
+        name: userName,
+        email: userEmail,
+        password: userPassword,
+      });
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError, "register"));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await onAuthenticated();
+      navigate("/feeds");
+    } catch (verificationError) {
+      console.error(
+        "Registration succeeded but session verification failed:",
+        verificationError,
+      );
+      setError(
+        "Your account was created, but Wavely couldn't verify your session. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

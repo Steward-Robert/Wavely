@@ -16,8 +16,8 @@ import ShowStories from "./components/feeds/showStories.jsx";
 import ReportProblem from "./pages/reportProblem.jsx";
 import ContactSupport from "./pages/contactSupport.jsx";
 import AdminDashboard from "./pages/adminDashboard.jsx";
-import axios from "axios";
 import SavedPosts from "./pages/savedPosts.jsx";
+import api from "./services/api.js";
 
 /*
  * Protect private Wavely routes.
@@ -49,17 +49,13 @@ function App() {
   const [user, setUser] = useState(null);
   const [alluser, setAllUser] = useState([]);
   const authRequestId = useRef(0);
+  const authCheckStarted = useRef(false);
 
   const loadAuthenticatedUser = useCallback(async () => {
     const requestId = ++authRequestId.current;
 
     try {
-      const response = await axios.get(
-        "https://wavely-backend-7ryc.onrender.com/api/me",
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await api.get("/me");
       const authenticatedUser = response.data.user;
 
       if (!authenticatedUser) {
@@ -101,8 +97,11 @@ function App() {
    * has finished.
    */
   useEffect(() => {
+    if (authCheckStarted.current) return;
+    authCheckStarted.current = true;
+
     loadAuthenticatedUser().catch((error) => {
-      if (error.response?.status !== 401) {
+      if (![401, 403].includes(error.response?.status)) {
         console.error("Error verifying authentication:", error);
       }
     });
@@ -130,12 +129,7 @@ function App() {
       }
 
       try {
-        const response = await axios.get(
-          "https://wavely-backend-7ryc.onrender.com/api/users",
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await api.get("/users");
 
         if (isCurrent) {
           setAllUser(response.data.users);

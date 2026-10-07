@@ -1,5 +1,5 @@
 import { Heart, Bookmark, MessageCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import FriendB from "../button/friendButton.jsx";
 import api from "../../services/api.js";
@@ -16,6 +16,7 @@ function Foryou({
   const [savedStatusLoaded, setSavedStatusLoaded] = useState(false);
   const [savingPostIds, setSavingPostIds] = useState(() => new Set());
   const [saveError, setSaveError] = useState("");
+  const requestsRef = useRef(null);
 
   const showVideoPreview = (event) => {
     const preview = event.currentTarget;
@@ -98,35 +99,55 @@ function Foryou({
   };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get("/post");
-        setAllPost(Array.isArray(response.data.posts) ? response.data.posts : []);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
+    let isCurrent = true;
+    const requests =
+      requestsRef.current ||
+      (requestsRef.current = {
+        posts: api.get("/post"),
+        savedPosts: api.get("/savedPost/saved"),
+      });
 
-    const fetchSavedPostIds = async () => {
-      try {
-        const response = await api.get("/savedPost/saved");
-        const savedPosts = Array.isArray(response.data.savedPosts)
-          ? response.data.savedPosts
-          : [];
-        setSavedPostIds(new Set(savedPosts.map((saved) => saved.postID)));
-      } catch (error) {
-        console.error("Error fetching saved posts:", error);
-        setSaveError(
-          error.response?.data?.message ||
-            "Saved-post status could not be loaded.",
-        );
-      } finally {
+    Promise.allSettled([requests.posts, requests.savedPosts]).then(
+      ([postsResult, savedPostsResult]) => {
+        if (!isCurrent) return;
+
+        if (postsResult.status === "fulfilled") {
+          const posts = Array.isArray(postsResult.value.data.posts)
+            ? postsResult.value.data.posts
+            : [];
+          const uniquePosts = [
+            ...new Map(
+              posts
+                .filter((post) => post?.id != null)
+                .map((post) => [String(post.id), post]),
+            ).values(),
+          ];
+          setAllPost(uniquePosts);
+        } else {
+          console.error("Error fetching posts:", postsResult.reason);
+        }
+
+        if (savedPostsResult.status === "fulfilled") {
+          const savedPosts = Array.isArray(
+            savedPostsResult.value.data.savedPosts,
+          )
+            ? savedPostsResult.value.data.savedPosts
+            : [];
+          setSavedPostIds(new Set(savedPosts.map((saved) => saved.postID)));
+        } else {
+          console.error("Error fetching saved posts:", savedPostsResult.reason);
+          setSaveError(
+            savedPostsResult.reason.response?.data?.message ||
+              "Saved-post status could not be loaded.",
+          );
+        }
         setSavedStatusLoaded(true);
-      }
-    };
+      },
+    );
 
-    fetchPosts();
-    fetchSavedPostIds();
+    return () => {
+      isCurrent = false;
+    };
   }, []);
 
   return (
@@ -147,145 +168,158 @@ function Foryou({
           {saveError}
         </p>
       )}
-      {allPost.map((post) => {
-        const avatarUrl = post.author?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
-        const mediaItems = getPostMedia(post);
+      <div
+        aria-label="Posts"
+        className="mx-auto h-[min(75svh,52rem)] min-h-[20rem] w-full snap-y snap-mandatory overflow-y-auto scroll-smooth overscroll-y-auto"
+        role="region"
+        tabIndex={0}
+      >
+        {allPost.length === 0 ? (
+          <p className="mx-auto flex h-full w-[98vw] items-center justify-center text-center text-sm text-gray-400 md:w-[70vw] lg:w-[45vw]">
+            No posts to show yet.
+          </p>
+        ) : (
+          allPost.map((post) => {
+            const avatarUrl = post.author?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
+            const mediaItems = getPostMedia(post);
 
-        return (
-          <main
-            key={post.id}
-            className="mx-auto my-3 block h-auto w-[98vw] sm:mx-auto sm:block md:mx-auto md:block md:w-[70vw] lg:w-[45vw]"
-          >
-            <article className="overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150">
-              {/* HEADER */}
-              <header className="flex items-center justify-between gap-4 text-amber-50">
-                <div className="flex gap-2">
-                  {/* AVATAR */}
-                  <div className="h-[50px] w-[50px] overflow-hidden rounded-full border border-white/15 bg-white/10 shadow-lg shadow-black/20">
-                    <img
-                      src={avatarUrl}
-                      alt={post.author?.name || "User"}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-
-                  {/* USER INFO */}
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-1.5 text-base font-semibold tracking-wide">
-                      {post.author?.name || "Unknown user"}
-                      {post.author?.role === "ADMIN" && (
-                        <VerifiedBadge className="h-5 w-5" />
-                      )}
-                    </p>
-
-                    <p className="text-sm text-gray-400">
-                      @
-                      {post.author?.name?.toLowerCase().replace(/\s+/g, "") ||
-                        "user"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* OPTIONS */}
-                <FriendB
-                  usersId={post.author?.id}
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
-                />
-              </header>
-
-              {/* CONTENT */}
-              {post.content && (
-                <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] px-3 py-3 text-amber-50 md:px-4">
-                  <p className="text-[15px] leading-7 text-amber-50/90">
-                    {post.content}
-                  </p>
-                </div>
-              )}
-
-              {/* MEDIA */}
-              {mediaItems.length > 0 && (
-                <div className="mt-4 border">
-                  {mediaItems.map((media) => (
-                    <div
-                      key={media.id}
-                      className="mb-3 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 last:mb-0 sm:mx-auto sm:block sm:w-[70vw] md:w-[50vw] lg:w-[40vw]"
-                    >
-                      {media.mediaType === "video" ? (
-                        <video
-                          src={media.url}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          onLoadedMetadata={showVideoPreview}
-                          className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
-                        />
-                      ) : (
+            return (
+              <main
+                key={post.id}
+                className="mx-auto flex min-h-full w-[98vw] snap-start items-center justify-center py-3 sm:mx-auto md:mx-auto md:w-[70vw] lg:w-[45vw]"
+              >
+                <article className="overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150">
+                  {/* HEADER */}
+                  <header className="flex items-center justify-between gap-4 text-amber-50">
+                    <div className="flex gap-2">
+                      {/* AVATAR */}
+                      <div className="h-[50px] w-[50px] overflow-hidden rounded-full border border-white/15 bg-white/10 shadow-lg shadow-black/20">
                         <img
-                          src={media.url}
-                          alt="Post"
-                          loading="lazy"
-                          className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
+                          src={avatarUrl}
+                          alt={post.author?.name || "User"}
+                          className="h-full w-full object-cover"
                         />
-                      )}
+                      </div>
+
+                      {/* USER INFO */}
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-1.5 text-base font-semibold tracking-wide">
+                          {post.author?.name || "Unknown user"}
+                          {post.author?.role === "ADMIN" && (
+                            <VerifiedBadge className="h-5 w-5" />
+                          )}
+                        </p>
+
+                        <p className="text-sm text-gray-400">
+                          @
+                          {post.author?.name?.toLowerCase().replace(/\s+/g, "") ||
+                            "user"}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
 
-              {/* ACTIONS */}
-              <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-gray-400">
-                {/* LIKE */}
-                <button
-                  type="button"
-                  onClick={() => handleLike(post)}
-                  disabled={likePending[post.id]}
-                  aria-pressed={Boolean(post.likedByUser)}
-                  aria-label={
-                    post.likedByUser ? "Unlike this post" : "Like this post"
-                  }
-                  className={`flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 disabled:cursor-wait disabled:opacity-60 ${post.likedByUser ? "text-rose-400" : "text-gray-400 hover:text-rose-400"}`}
-                >
-                  <Heart
-                    color="currentColor"
-                    fill={post.likedByUser ? "currentColor" : "none"}
-                    size={24}
-                  />
+                    {/* OPTIONS */}
+                    <FriendB
+                      usersId={post.author?.id}
+                      className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200/50 hover:bg-white/10 hover:text-amber-100"
+                    />
+                  </header>
 
-                  <p className="text-sm font-medium">
-                    {post._count?.likes || 0}
-                  </p>
-                </button>
+                  {/* CONTENT */}
+                  {post.content && (
+                    <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] px-3 py-3 text-amber-50 md:px-4">
+                      <p className="text-[15px] leading-7 text-amber-50/90">
+                        {post.content}
+                      </p>
+                    </div>
+                  )}
 
-                {/* COMMENTS */}
-                <button
-                  type="button"
-                  onClick={() => onOpenComments(post.id)}
-                  aria-label={`View comments for ${post.author?.name || "this"} post`}
-                  className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-yellow-200"
-                >
-                  <MessageCircle aria-hidden="true" size={24} />
+                  {/* MEDIA */}
+                  {mediaItems.length > 0 && (
+                    <div className="mt-4 border">
+                      {mediaItems.map((media) => (
+                        <div
+                          key={media.id}
+                          className="mb-3 overflow-hidden rounded-[22px] border border-white/10 bg-black/20 shadow-inner shadow-black/20 last:mb-0 sm:mx-auto sm:block sm:w-[70vw] md:w-[50vw] lg:w-[40vw]"
+                        >
+                          {media.mediaType === "video" ? (
+                            <video
+                              src={media.url}
+                              controls
+                              playsInline
+                              preload="metadata"
+                              onLoadedMetadata={showVideoPreview}
+                              className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
+                            />
+                          ) : (
+                            <img
+                              src={media.url}
+                              alt="Post"
+                              loading="lazy"
+                              className="max-h-[600px] w-full rounded-[22px] border border-white/30 object-contain"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                  <p className="text-sm font-medium">
-                    {commentCounts[post.id] ?? post._count?.comments ?? 0}
-                  </p>
-                </button>
+                  {/* ACTIONS */}
+                  <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-gray-400">
+                    {/* LIKE */}
+                    <button
+                      type="button"
+                      onClick={() => handleLike(post)}
+                      disabled={likePending[post.id]}
+                      aria-pressed={Boolean(post.likedByUser)}
+                      aria-label={
+                        post.likedByUser ? "Unlike this post" : "Like this post"
+                      }
+                      className={`flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 disabled:cursor-wait disabled:opacity-60 ${post.likedByUser ? "text-rose-400" : "text-gray-400 hover:text-rose-400"}`}
+                    >
+                      <Heart
+                        color="currentColor"
+                        fill={post.likedByUser ? "currentColor" : "none"}
+                        size={24}
+                      />
 
-                {/* BOOKMARK */}
-                <button
-                  type="button"
-                  onClick={() => handleSave(post)}
-                  disabled={!savedStatusLoaded || savingPostIds.has(post.id)}
-                  aria-pressed={savedPostIds.has(post.id)}
-                  aria-label={savedPostIds.has(post.id) ? "Remove from saved posts" : "Save post"}
-                  className={`rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300 disabled:cursor-wait disabled:opacity-60 ${savedPostIds.has(post.id) ? "text-amber-300" : ""}`}
-                >
-                  <Bookmark size={24} fill={savedPostIds.has(post.id) ? "currentColor" : "none"} />
-                </button>
-              </div>
-            </article>
-          </main>
-        );
-      })}
+                      <p className="text-sm font-medium">
+                        {post._count?.likes || 0}
+                      </p>
+                    </button>
+
+                    {/* COMMENTS */}
+                    <button
+                      type="button"
+                      onClick={() => onOpenComments(post.id)}
+                      aria-label={`View comments for ${post.author?.name || "this"} post`}
+                      className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-yellow-200"
+                    >
+                      <MessageCircle aria-hidden="true" size={24} />
+
+                      <p className="text-sm font-medium">
+                        {commentCounts[post.id] ?? post._count?.comments ?? 0}
+                      </p>
+                    </button>
+
+                    {/* BOOKMARK */}
+                    <button
+                      type="button"
+                      onClick={() => handleSave(post)}
+                      disabled={!savedStatusLoaded || savingPostIds.has(post.id)}
+                      aria-pressed={savedPostIds.has(post.id)}
+                      aria-label={savedPostIds.has(post.id) ? "Remove from saved posts" : "Save post"}
+                      className={`rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300 disabled:cursor-wait disabled:opacity-60 ${savedPostIds.has(post.id) ? "text-amber-300" : ""}`}
+                    >
+                      <Bookmark size={24} fill={savedPostIds.has(post.id) ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+                </article>
+              </main>
+            );
+          })
+        )}
+      </div>
     </>
   );
 }
