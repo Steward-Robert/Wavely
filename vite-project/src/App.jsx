@@ -5,7 +5,7 @@ import "./styles/App.css";
 import Loader from "./components/loader.jsx";
 import Welcome from "../src/pages/welcome.jsx";
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
 import Post from "./pages/post.jsx";
@@ -17,21 +17,53 @@ import ReportProblem from "./pages/reportProblem.jsx";
 import ContactSupport from "./pages/contactSupport.jsx";
 import AdminDashboard from "./pages/adminDashboard.jsx";
 import axios from "axios";
-import { Navigate } from "react-router";
 import SavedPosts from "./pages/savedPosts.jsx";
 
+/*
+ * Protect private Wavely routes.
+ *
+ * While authentication is being checked, we show the loader.
+ * If there is no authenticated user, we redirect to the welcome page.
+ * Only an authenticated user can access the protected page.
+ */
+function ProtectedRoute({ user, authLoading, children }) {
+  if (authLoading) {
+    return <Loader />;
+  }
+
+  if (!user) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 function App() {
+  // Initial Wavely loading screen
   const [loading, setLoading] = useState(true);
+
+  // Authentication verification
+  const [authLoading, setAuthLoading] = useState(true);
+
   const [isloading, setIsLoading] = useState(false);
   const [showStory, setShowStory] = useState([]);
+
   const [user, setUser] = useState(null);
   const [alluser, setAllUser] = useState([]);
+
+  // Used when authentication changes after login/logout
   const [authVersion, setAuthVersion] = useState(0);
 
   const refreshAfterAuthentication = () => {
     setAuthVersion((version) => version + 1);
   };
 
+  /*
+   * Wavely's initial visual loader.
+   *
+   * This is separate from authLoading.
+   * authLoading is responsible for checking the JWT.
+   */
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -40,42 +72,80 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
 
+  /*
+   * Check whether the current user has a valid authentication cookie.
+   *
+   * IMPORTANT:
+   * We do not allow protected pages to render until this request
+   * has finished.
+   */
   useEffect(() => {
     let isCurrent = true;
 
     const loadUser = async () => {
+      setAuthLoading(true);
+
       try {
         const response = await axios.get(
           "https://wavely-backend-7ryc.onrender.com/api/me",
           {
             withCredentials: true,
-          },
+          }
         );
-        if (isCurrent) setUser(response.data.user);
-      } catch {
-        if (isCurrent) setUser(null);
+
+        if (isCurrent) {
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        if (isCurrent) {
+          setUser(null);
+        }
+      } finally {
+        if (isCurrent) {
+          setAuthLoading(false);
+        }
       }
     };
 
     loadUser();
+
     return () => {
       isCurrent = false;
     };
   }, [authVersion]);
 
+  /*
+   * Load users ONLY after authentication has been confirmed.
+   *
+   * This prevents an unauthenticated visitor from requesting
+   * protected user data.
+   */
   useEffect(() => {
     let isCurrent = true;
 
     const loadAllUser = async () => {
+      // Do nothing while authentication is being checked
+      if (authLoading) {
+        return;
+      }
+
+      // Do not request users if nobody is authenticated
+      if (!user) {
+        setAllUser([]);
+        return;
+      }
+
       try {
         const response = await axios.get(
           "https://wavely-backend-7ryc.onrender.com/api/users",
           {
             withCredentials: true,
-          },
+          }
         );
 
-        if (isCurrent) setAllUser(response.data.users);
+        if (isCurrent) {
+          setAllUser(response.data.users);
+        }
       } catch (error) {
         if (isCurrent) {
           console.error("USERS ERROR :", error);
@@ -85,76 +155,220 @@ function App() {
     };
 
     loadAllUser();
+
     return () => {
       isCurrent = false;
     };
-  }, [authVersion]);
+  }, [user, authLoading, authVersion]);
 
   return (
     <UserContext.Provider value={user}>
-      <FriendshipProvider key={user?.id || "anonymous"} user={user}>
+      <FriendshipProvider
+        key={user?.id || "anonymous"}
+        user={user}
+      >
         <BrowserRouter>
           <Routes>
+
+            {/* =====================================================
+                PUBLIC ROUTE
+                ===================================================== */}
+
             <Route
               path="/"
               element={
                 loading ? (
                   <Loader />
                 ) : (
-                  <Welcome onAuthenticated={refreshAfterAuthentication} />
+                  <Welcome
+                    onAuthenticated={refreshAfterAuthentication}
+                  />
                 )
               }
             />
+
+            {/* =====================================================
+                PROTECTED ROUTES
+                ===================================================== */}
+
             <Route
               path="/feeds"
-              element={<Feed user={user} alluser={alluser} />}
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <Feed
+                    user={user}
+                    alluser={alluser}
+                  />
+                </ProtectedRoute>
+              }
             />
+
             <Route
               path="/fr"
-              element={<FriendsPage allUser={alluser} />}
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <FriendsPage
+                    allUser={alluser}
+                  />
+                </ProtectedRoute>
+              }
             />
-            <Route path="pst" element={<Post user={user} />} />
+
+            <Route
+              path="/pst"
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <Post user={user} />
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/stories"
-              element={<ShowStories alluser={alluser} />}
-              showStory={showStory}
-              setShowStory={setShowStory}
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <ShowStories
+                    alluser={alluser}
+                    showStory={showStory}
+                    setShowStory={setShowStory}
+                  />
+                </ProtectedRoute>
+              }
             />
+
             <Route
               path="/saved"
-              element={<SavedPosts alluser={alluser} />}
-            />
-            <Route
-              path="settigns"
               element={
-                <Settings
-                  isloading={isloading}
-                  setIsLoading={setIsLoading}
+                <ProtectedRoute
                   user={user}
-                  setUser={setUser}
-                />
+                  authLoading={authLoading}
+                >
+                  <SavedPosts
+                    alluser={alluser}
+                  />
+                </ProtectedRoute>
               }
             />
+
             <Route
-              path="account"
+              path="/settigns"
               element={
-                <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <Settings
+                    isloading={isloading}
+                    setIsLoading={setIsLoading}
+                    user={user}
+                    setUser={setUser}
+                  />
+                </ProtectedRoute>
               }
             />
-            <Route path="/user/:userId" element={<UserProfile user={user} />} />
-            <Route path="about" element={<AboutWavely />} />
-            <Route path="/report" element={<ReportProblem />} />
-            <Route path="/contact-support" element={<ContactSupport />} />
+
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <ProfilAcc
+                    user={user}
+                    setUser={setUser}
+                    allUsers={alluser}
+                  />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/user/:userId"
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <UserProfile user={user} />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/report"
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <ReportProblem />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/contact-support"
+              element={
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  <ContactSupport />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* =====================================================
+                ADMIN ROUTE
+                ===================================================== */}
+
             <Route
               path="/admin"
               element={
-                user?.role === "ADMIN" ? (
-                  <AdminDashboard user={user} />
-                ) : (
-                  <Navigate to="/feeds" replace />
-                )
+                <ProtectedRoute
+                  user={user}
+                  authLoading={authLoading}
+                >
+                  {user?.role === "ADMIN" ? (
+                    <AdminDashboard user={user} />
+                  ) : (
+                    <Navigate to="/feeds" replace />
+                  )}
+                </ProtectedRoute>
               }
             />
+
+            {/* =====================================================
+                PUBLIC INFORMATION PAGE
+                ===================================================== */}
+
+            <Route
+              path="/about"
+              element={<AboutWavely />}
+            />
+
+            {/* =====================================================
+                FALLBACK
+                ===================================================== */}
+
+            <Route
+              path="*"
+              element={<Navigate to="/" replace />}
+            />
+
           </Routes>
         </BrowserRouter>
       </FriendshipProvider>
