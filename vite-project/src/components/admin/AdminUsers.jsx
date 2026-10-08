@@ -1,4 +1,4 @@
-import { Eye, Search, UserCheck, UserRoundX } from "lucide-react";
+import { Eye, Search, Trash2, UserCheck, UserRoundX } from "lucide-react";
 import { useNavigate } from "react-router";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 
@@ -14,6 +14,7 @@ function AdminUsers({
   onSearch,
   onPage,
   onToggleStatus,
+  onDeleteUser,
   currentUserId,
 }) {
   const navigate = useNavigate();
@@ -137,6 +138,16 @@ function AdminUsers({
                           <span>
                             {user.isActive ? "Deactivate" : "Reactivate"}
                           </span>
+                        </button>
+                        <button
+                          type="button"
+                          disabled={user.id === currentUserId}
+                          onClick={() => onDeleteUser(user)}
+                          title={`Delete ${user.name}'s account`}
+                          aria-label={`Delete ${user.name}'s account`}
+                          className="inline-flex items-center justify-center rounded-lg border border-rose-200/12 px-2.5 py-2 text-rose-100/80 transition hover:border-rose-200/25 hover:bg-rose-200/8 disabled:cursor-not-allowed disabled:opacity-35"
+                        >
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>

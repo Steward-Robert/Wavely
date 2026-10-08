@@ -74,6 +74,12 @@ function App() {
     setAuthLoading(true);
     return loadAuthenticatedUser();
   }, [loadAuthenticatedUser]);
+  const handleAccountDeleted = useCallback(() => {
+    authRequestId.current += 1;
+    setUser(null);
+    setAllUser([]);
+    setAuthLoading(false);
+  }, []);
 
   /*
    * Wavely's initial visual loader.
@@ -151,13 +157,9 @@ function App() {
 
   return (
     <UserContext.Provider value={user}>
-      <FriendshipProvider
-        key={user?.id || "anonymous"}
-        user={user}
-      >
+      <FriendshipProvider key={user?.id || "anonymous"} user={user}>
         <BrowserRouter>
           <Routes>
-
             {/* =====================================================
                 PUBLIC ROUTE
                 ===================================================== */}
@@ -168,9 +170,7 @@ function App() {
                 loading ? (
                   <Loader />
                 ) : (
-                  <Welcome
-                    onAuthenticated={refreshAfterAuthentication}
-                  />
+                  <Welcome onAuthenticated={refreshAfterAuthentication} />
                 )
               }
             />
@@ -182,14 +182,8 @@ function App() {
             <Route
               path="/feeds"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
-                  <Feed
-                    user={user}
-                    alluser={alluser}
-                  />
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <Feed user={user} alluser={alluser} />
                 </ProtectedRoute>
               }
             />
@@ -197,13 +191,8 @@ function App() {
             <Route
               path="/fr"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
-                  <FriendsPage
-                    allUser={alluser}
-                  />
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <FriendsPage allUser={alluser} />
                 </ProtectedRoute>
               }
             />
@@ -211,10 +200,7 @@ function App() {
             <Route
               path="/pst"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <Post user={user} />
                 </ProtectedRoute>
               }
@@ -223,13 +209,8 @@ function App() {
             <Route
               path="/stories"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
-                  <ShowStories
-                    alluser={alluser}
-                  />
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <ShowStories alluser={alluser} />
                 </ProtectedRoute>
               }
             />
@@ -237,13 +218,8 @@ function App() {
             <Route
               path="/saved"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
-                  <SavedPosts
-                    alluser={alluser}
-                  />
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <SavedPosts alluser={alluser} />
                 </ProtectedRoute>
               }
             />
@@ -251,15 +227,13 @@ function App() {
             <Route
               path="/settigns"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <Settings
                     isloading={isloading}
                     setIsLoading={setIsLoading}
                     user={user}
                     setUser={setUser}
+                    onAccountDeleted={handleAccountDeleted}
                   />
                 </ProtectedRoute>
               }
@@ -268,15 +242,8 @@ function App() {
             <Route
               path="/account"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
-                  <ProfilAcc
-                    user={user}
-                    setUser={setUser}
-                    allUsers={alluser}
-                  />
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <ProfilAcc user={user} setUser={setUser} allUsers={alluser} />
                 </ProtectedRoute>
               }
             />
@@ -284,10 +251,7 @@ function App() {
             <Route
               path="/user/:userId"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <UserProfile user={user} />
                 </ProtectedRoute>
               }
@@ -296,10 +260,7 @@ function App() {
             <Route
               path="/report"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <ReportProblem />
                 </ProtectedRoute>
               }
@@ -308,10 +269,7 @@ function App() {
             <Route
               path="/contact-support"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   <ContactSupport />
                 </ProtectedRoute>
               }
@@ -324,10 +282,7 @@ function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute
-                  user={user}
-                  authLoading={authLoading}
-                >
+                <ProtectedRoute user={user} authLoading={authLoading}>
                   {user?.role === "ADMIN" ? (
                     <AdminDashboard user={user} />
                   ) : (
@@ -341,20 +296,13 @@ function App() {
                 PUBLIC INFORMATION PAGE
                 ===================================================== */}
 
-            <Route
-              path="/about"
-              element={<AboutWavely />}
-            />
+            <Route path="/about" element={<AboutWavely />} />
 
             {/* =====================================================
                 FALLBACK
                 ===================================================== */}
 
-            <Route
-              path="*"
-              element={<Navigate to="/" replace />}
-            />
-
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </FriendshipProvider>

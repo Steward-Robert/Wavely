@@ -11,16 +11,38 @@ import {
   ChevronRight,
   ShieldCheck,
   SlidersHorizontal,
+  Trash2,
 } from "lucide-react";
 import { useContext, useState } from "react";
 
 import { useNavigate } from "react-router";
 import UserContext from "../context/UserContext.jsx";
+import ConfirmDialog from "../components/admin/ConfirmDialog.jsx";
+import api from "../services/api.js";
 
-function Settings({ isloading, setIsLoading }) {
+function Settings({ isloading, setIsLoading, onAccountDeleted }) {
   const navigate = useNavigate();
   const user = useContext(UserContext);
   const [popupOpen, setPopupOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const deleteAccount = async () => {
+    setIsDeletingAccount(true);
+    setDeleteError("");
+    try {
+      await api.delete("/auth/account");
+      onAccountDeleted();
+      navigate("/", { replace: true });
+    } catch (error) {
+      setDeleteError(
+        error.response?.data?.message || "Unable to delete your account.",
+      );
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   const accountItems = [
     {
@@ -164,9 +186,50 @@ function Settings({ isloading, setIsLoading }) {
                 </span>
               </span>
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteError("");
+                setDeleteDialogOpen(true);
+              }}
+              className="group flex w-full items-center gap-3 rounded-2xl border border-red-300/15 bg-red-400/6 px-4 py-4 text-left transition hover:border-red-300/35 hover:bg-red-400/10 focus:outline-none focus:ring-2 focus:ring-red-200/50 sm:px-5"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-200/15 bg-red-300/10 text-red-200">
+                <Trash2 size={20} strokeWidth={1.8} />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold text-red-100 sm:text-base">
+                  Delete account
+                </span>
+                <span className="mt-1 block text-xs text-red-100/55 sm:text-sm">
+                  Permanently delete your account and content
+                </span>
+              </span>
+            </button>
+            {deleteError && (
+              <p role="alert" className="text-sm text-red-200">
+                {deleteError}
+              </p>
+            )}
           </div>
         </section>
       </main>
+      <ConfirmDialog
+        dialog={
+          deleteDialogOpen
+            ? {
+                title: "Permanently delete your account?",
+                description:
+                  "Your account, posts, stories, comments, and uploaded media will be permanently removed. You cannot undo this action.",
+                confirmLabel: "Delete my account",
+                danger: true,
+              }
+            : null
+        }
+        busy={isDeletingAccount}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={deleteAccount}
+      />
     </div>
   );
 }

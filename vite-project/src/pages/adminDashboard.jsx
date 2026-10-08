@@ -162,6 +162,16 @@ function AdminDashboard({ user }) {
     });
   };
 
+  const askDeleteUser = (targetUser) => {
+    requestAction({
+      title: "Delete this user account?",
+      description: `This permanently deletes ${targetUser.name}'s account, posts, stories, comments, and uploaded media. This action cannot be undone.`,
+      confirmLabel: "Delete account",
+      danger: true,
+      action: () => api.delete(`/admin/users/${targetUser.id}`),
+    });
+  };
+
   const askDelete = (record, kind) => {
     const isPost = kind === "posts";
     requestAction({
@@ -346,6 +356,7 @@ function AdminDashboard({ user }) {
                 setPage(value);
               }}
               onToggleStatus={askToggleUser}
+              onDeleteUser={askDeleteUser}
               currentUserId={user.id}
             />
           ) : section === "posts" || section === "comments" ? (
