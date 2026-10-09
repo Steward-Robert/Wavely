@@ -1,7 +1,0 @@
-[build]
-  base = "vite-project"
-  command = "npm install && npm run build"
-  publish = "dist"
-
-[build.environment]
-  NPM_FLAGS = "--include=dev"
