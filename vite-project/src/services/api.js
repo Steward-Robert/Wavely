@@ -1,17 +1,17 @@
 import axios from "axios";
 
 const defaultBaseUrl = "https://wavely-backend-7ryc.onrender.com/api";
-const configuredBaseUrl = import.meta.env.VITE_API_URL || defaultBaseUrl;
-const normalizedBaseUrl = configuredBaseUrl.replace(/\/+$/, "");
-const resolvedBaseUrl =
-  import.meta.env.PROD && !/^https?:\/\//i.test(normalizedBaseUrl)
-    ? defaultBaseUrl
-    : normalizedBaseUrl;
+
+const configuredBaseUrl = import.meta.env.VITE_API_URL;
+
+const baseUrl = configuredBaseUrl
+  ? configuredBaseUrl.replace(/\/+$/, "")
+  : import.meta.env.PROD
+    ? "/api"
+    : defaultBaseUrl;
 
 const api = axios.create({
-  baseURL: /\/api$/i.test(resolvedBaseUrl)
-    ? resolvedBaseUrl
-    : `${resolvedBaseUrl}/api`,
+  baseURL: /\/api$/i.test(baseUrl) ? baseUrl : `${baseUrl}/api`,
   withCredentials: true,
 });
 
