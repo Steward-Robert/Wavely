@@ -4,10 +4,10 @@ const defaultBaseUrl = "https://wavely-backend-7ryc.onrender.com/api";
 
 const configuredBaseUrl = import.meta.env.VITE_API_URL;
 
-const baseUrl = configuredBaseUrl
-  ? configuredBaseUrl.replace(/\/+$/, "")
-  : import.meta.env.PROD
-    ? "/api"
+const baseUrl = import.meta.env.PROD
+  ? "/api"
+  : configuredBaseUrl
+    ? configuredBaseUrl.replace(/\/+$/, "")
     : defaultBaseUrl;
 
 const api = axios.create({

@@ -4,11 +4,15 @@ This template provides a minimal setup to get React working in Vite with HMR and
 
 ## API configuration
 
-The frontend calls `https://wavely-backend-7ryc.onrender.com/api` by default.
-Set `VITE_API_URL` to an absolute API URL to use a different backend. Relative
-API URLs are ignored in production because the static frontend host does not
-serve the backend API. The backend must allow the frontend origin and
-credentialed requests for authentication cookies to work.
+The shared Axios client uses the Vercel `/api` proxy in production. The
+`vercel.json` rewrite forwards those requests to the Render backend, while the
+SPA fallback serves the React application for other routes. Keep the Vercel
+project's Root Directory set to `vite-project` so it reads this configuration.
+
+For local development, the client defaults to the Render API and can be pointed
+at another API with `VITE_API_URL`. Production always uses `/api`, so a
+deployment environment variable cannot bypass the Vercel proxy. Authentication
+requests use credentialed cookies through the shared client.
 
 Currently, two official plugins are available:
 

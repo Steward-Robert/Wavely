@@ -3,7 +3,7 @@ import api from "../../services/api";
 import { Send, Trash2, X } from "lucide-react";
 import { Link } from "react-router";
 
-const commentApiUrl = "https://wavely-backend-7ryc.onrender.com/api/comment";
+const commentApiUrl = "/comment";
 
 function getInitials(name) {
   return (

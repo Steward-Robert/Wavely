@@ -1,9 +1,7 @@
 import api from "../services/api";
 
-const API_URL = "https://wavely-backend-7ryc.onrender.com/api";
-
 const fetchLikesReceived = async (userId, signal) => {
-  const response = await api.get(`${API_URL}/post`, {
+  const response = await api.get("/post", {
     withCredentials: true,
     signal,
   });
