@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { Send, Trash2, X } from "lucide-react";
 import { Link } from "react-router";
 
@@ -53,9 +53,7 @@ function CommentItem({
       ? getAvatarUrl(currentUser?.avatar) || getAvatarUrl(currentUser?.avatars)
       : "");
   const avatarContent = (
-    <div
-      className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/30 bg-gradient-to-br from-cyan-300/20 to-blue-800/40 text-xs font-semibold text-cyan-100 sm:h-10 sm:w-10"
-    >
+    <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full border border-cyan-300/30 bg-gradient-to-br from-cyan-300/20 to-blue-800/40 text-xs font-semibold text-cyan-100 sm:h-10 sm:w-10">
       {avatarUrl && !avatarFailed ? (
         <img
           src={avatarUrl}
@@ -124,13 +122,7 @@ function CommentItem({
   );
 }
 
-function Comment({
-  postId,
-  user,
-  users = [],
-  onCommentCountChange,
-  onClose,
-}) {
+function Comment({ postId, user, users = [], onCommentCountChange, onClose }) {
   const [comments, setComments] = useState([]);
   const [draft, setDraft] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -148,13 +140,15 @@ function Comment({
       setLoadError("");
 
       try {
-        const response = await axios.get(commentApiUrl, {
+        const response = await api.get(commentApiUrl, {
           withCredentials: true,
           signal: controller.signal,
         });
 
         if (!Array.isArray(response.data?.allComm)) {
-          throw new Error("The comments response was not in the expected format.");
+          throw new Error(
+            "The comments response was not in the expected format.",
+          );
         }
 
         const postComments = response.data.allComm.filter(
@@ -166,7 +160,8 @@ function Comment({
         if (controller.signal.aborted) return;
         console.error("Error loading comments:", error);
         setLoadError(
-          error.response?.data?.message || "Couldn't load comments. Please try again later.",
+          error.response?.data?.message ||
+            "Couldn't load comments. Please try again later.",
         );
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
@@ -185,14 +180,16 @@ function Comment({
     setIsSubmitting(true);
     setSubmitError("");
     try {
-      const response = await axios.post(
+      const response = await api.post(
         `${commentApiUrl}/${encodeURIComponent(postId)}`,
         { content },
         { withCredentials: true },
       );
 
       if (!response.data?.id || response.data.postId !== postId) {
-        throw new Error("The server response did not contain the created comment.");
+        throw new Error(
+          "The server response did not contain the created comment.",
+        );
       }
 
       const nextComments = [...comments, response.data];
@@ -202,7 +199,8 @@ function Comment({
     } catch (error) {
       console.error("Error submitting comment:", error);
       setSubmitError(
-        error.response?.data?.message || "Couldn't post your comment. Please try again.",
+        error.response?.data?.message ||
+          "Couldn't post your comment. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -215,10 +213,9 @@ function Comment({
     setDeletingCommentId(comment.id);
     setDeleteError("");
     try {
-      await axios.delete(
-        `${commentApiUrl}/${encodeURIComponent(comment.id)}`,
-        { withCredentials: true },
-      );
+      await api.delete(`${commentApiUrl}/${encodeURIComponent(comment.id)}`, {
+        withCredentials: true,
+      });
 
       const nextComments = comments.filter(
         (currentComment) => currentComment.id !== comment.id,
@@ -306,7 +303,10 @@ function Comment({
             {submitError}
           </p>
         )}
-        <form onSubmit={handleSubmit} className="flex min-w-0 items-center gap-2">
+        <form
+          onSubmit={handleSubmit}
+          className="flex min-w-0 items-center gap-2"
+        >
           <label className="sr-only" htmlFor="comment-input">
             Write a comment
           </label>
@@ -322,7 +322,9 @@ function Comment({
           <button
             type="submit"
             aria-label="Send comment"
-            disabled={!draft.trim() || isSubmitting || Boolean(deletingCommentId)}
+            disabled={
+              !draft.trim() || isSubmitting || Boolean(deletingCommentId)
+            }
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-cyan-300 text-black transition-colors hover:bg-cyan-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Send aria-hidden="true" size={18} />

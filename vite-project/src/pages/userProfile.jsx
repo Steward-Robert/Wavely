@@ -6,7 +6,7 @@ import {
   Users,
   UserRound,
 } from "lucide-react";
-import axios from "axios";
+import api from "../services/api.js";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import Header from "../components/header";
@@ -31,8 +31,8 @@ function UserProfile({ user }) {
       setError("");
 
       try {
-        const response = await axios.get(
-          `https://wavely-backend-7ryc.onrender.com/api/userInfo/${encodeURIComponent(userId)}`,
+        const response = await api.get(
+          `/userInfo/${encodeURIComponent(userId)}`,
           {
             withCredentials: true,
             signal: controller.signal,
@@ -71,12 +71,9 @@ function UserProfile({ user }) {
   const isOwnProfile = Boolean(user?.id && user.id === profile?.id);
 
   const deleteOwnPost = async (post) => {
-    await axios.delete(
-      `https://wavely-backend-7ryc.onrender.com/api/post/${post.id}`,
-      {
-        withCredentials: true,
-      },
-    );
+    await api.delete(`/post/${post.id}`, {
+      withCredentials: true,
+    });
     setProfile((currentProfile) =>
       currentProfile
         ? {

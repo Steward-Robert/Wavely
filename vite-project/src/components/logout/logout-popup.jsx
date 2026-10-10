@@ -1,7 +1,7 @@
-import axios from "axios";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { AlertTriangle, LogOut, X } from "lucide-react";
+import api from "../../services/api.js";
 
 function Popup({ setPopupOpen, setIsLoading }) {
   const navigate = useNavigate();
@@ -15,8 +15,8 @@ function Popup({ setPopupOpen, setIsLoading }) {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        "https://wavely-backend-7ryc.onrender.com/api/auth/logout",
+      const response = await api.post(
+        "/auth/logout",
         {},
         {
           withCredentials: true,

@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../../services/api.js";
 import { Image, Video, X } from "lucide-react";
 import { useRef, useState } from "react";
 import Loader from "../loader.jsx";
@@ -41,13 +41,9 @@ function PostField() {
     });
 
     try {
-      const response = await axios.post(
-        "https://wavely-backend-7ryc.onrender.com/api/post",
-        formData,
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await api.post("/post", formData, {
+        withCredentials: true,
+      });
 
       console.log(response.data);
 

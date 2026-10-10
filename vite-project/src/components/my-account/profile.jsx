@@ -1,7 +1,7 @@
 import { Camera, FileText, Heart, LoaderCircle, Users } from "lucide-react";
 import PersonalInfo from "./personalInfo";
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "../../services/api.js";
 import VerifiedBadge from "../VerifiedBadge.jsx";
 import ProfilePosts from "./ProfilePosts.jsx";
 import fetchLikesReceived from "../../utils/profileLikes.js";
@@ -118,13 +118,9 @@ function Profil({ user, setUser, allUsers = [] }) {
       formData.append("image", optimizedFile);
       setAvatarStatus("uploading");
       setAvatarMessage("Uploading avatar...");
-      const response = await axios.post(
-        "https://wavely-backend-7ryc.onrender.com/api/upload",
-        formData,
-        {
-          withCredentials: true,
-        },
-      );
+      const response = await api.post("/upload", formData, {
+        withCredentials: true,
+      });
       if (!response.data?.avatar?.avatar) {
         throw new Error("The server did not return a saved avatar.");
       }
@@ -167,8 +163,8 @@ function Profil({ user, setUser, allUsers = [] }) {
       setPostsError("");
 
       try {
-        const response = await axios.get(
-          `https://wavely-backend-7ryc.onrender.com/api/userInfo/${encodeURIComponent(user.id)}`,
+        const response = await api.get(
+          `/userInfo/${encodeURIComponent(user.id)}`,
           {
             withCredentials: true,
             signal: controller.signal,
@@ -221,12 +217,9 @@ function Profil({ user, setUser, allUsers = [] }) {
   ];
 
   const deleteOwnPost = async (post) => {
-    await axios.delete(
-      `https://wavely-backend-7ryc.onrender.com/api/post/${post.id}`,
-      {
-        withCredentials: true,
-      },
-    );
+    await api.delete(`/post/${post.id}`, {
+      withCredentials: true,
+    });
     setPosts((currentPosts) =>
       currentPosts.filter((currentPost) => currentPost.id !== post.id),
     );
