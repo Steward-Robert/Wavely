@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function PostMediaCarousel({
@@ -8,22 +8,50 @@ function PostMediaCarousel({
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const touchStartX = useRef(null);
+  const videoRef = useRef(null);
 
   if (mediaItems.length === 0) return null;
 
   const currentIndex = Math.min(activeIndex, mediaItems.length - 1);
   const media = mediaItems[currentIndex];
+
   const moveBy = (offset) => {
     setActiveIndex((index) =>
       Math.max(0, Math.min(mediaItems.length - 1, index + offset)),
     );
   };
+
   const showVideoPreview = (event) => {
     const preview = event.currentTarget;
+
     if (Number.isFinite(preview.duration) && preview.duration > 0) {
       preview.currentTime = Math.min(0.5, preview.duration / 2);
     }
   };
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          video.pause();
+        }
+      },
+      {
+        threshold: 0,
+      },
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
+  }, [currentIndex, media.url]);
 
   return (
     <div
@@ -36,11 +64,16 @@ function PostMediaCarousel({
       onTouchEnd={(event) => {
         const endX = event.changedTouches[0]?.clientX;
         const startX = touchStartX.current;
+
         touchStartX.current = null;
+
         if (startX === null || endX === undefined) return;
 
         const distance = startX - endX;
-        if (Math.abs(distance) > 40) moveBy(distance > 0 ? 1 : -1);
+
+        if (Math.abs(distance) > 40) {
+          moveBy(distance > 0 ? 1 : -1);
+        }
       }}
       role="group"
     >
@@ -50,6 +83,7 @@ function PostMediaCarousel({
       >
         {media.mediaType === "video" ? (
           <video
+            ref={videoRef}
             src={media.url}
             controls
             playsInline
@@ -78,6 +112,7 @@ function PostMediaCarousel({
           >
             <ChevronLeft aria-hidden="true" size={22} />
           </button>
+
           <button
             type="button"
             onClick={() => moveBy(1)}
@@ -87,6 +122,7 @@ function PostMediaCarousel({
           >
             <ChevronRight aria-hidden="true" size={22} />
           </button>
+
           <span className="absolute bottom-3 right-3 rounded-full bg-black/65 px-2.5 py-1 text-xs font-medium text-white">
             {currentIndex + 1} / {mediaItems.length}
           </span>
