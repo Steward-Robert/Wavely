@@ -16,7 +16,7 @@ const menuItems = [
   { label: "Friends", path: "/fr", icon: Users },
   { label: "Saved", path: "/saved", icon: Bookmark },
   { label: "Create a post", path: "/pst", icon: Plus },
-  { label: "Messages", icon: MessageCircle },
+  { label: "Messages", path: "/messages", icon: MessageCircle },
   { label: "Notifications", icon: Bell },
   { label: "Settings", path: "/settigns", icon: Settings },
 ];
@@ -62,6 +62,7 @@ function Header() {
             <button
               type="button"
               aria-label="Open messages"
+              onClick={() => navigate("/messages")}
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-slate-300 transition hover:border-cyan-200/30 hover:bg-white/8 hover:text-cyan-100"
             >
               <MessageCircle size={19} strokeWidth={1.8} />

@@ -15,4 +15,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const socketBaseUrl =
+  import.meta.env.VITE_SOCKET_URL ||
+  new URL(
+    configuredBaseUrl?.startsWith("/")
+      ? defaultBaseUrl
+      : configuredBaseUrl || defaultBaseUrl,
+    window.location.origin,
+  ).origin;
+
+export { socketBaseUrl };
 export default api;

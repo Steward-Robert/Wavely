@@ -3,6 +3,7 @@ import {
   User,
   Plus,
   Bookmark,
+  MessageCircle,
   Settings,
   ShieldCheck,
 } from "lucide-react";
@@ -15,6 +16,7 @@ const navItems = [
   { label: "Friends", path: "/fr", icon: User },
   { label: "Create a post", path: "/pst", icon: Plus },
   { label: "Saved", path: "/saved", icon: Bookmark },
+  { label: "Messages", path: "/messages", icon: MessageCircle },
   { label: "Settings", path: "/settigns", icon: Settings },
 ];
 

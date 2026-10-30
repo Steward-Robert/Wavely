@@ -4,7 +4,14 @@ import { FriendshipProvider } from "./context/FriendshipContext.jsx";
 import "./styles/App.css";
 import Loader from "./components/loader.jsx";
 import Welcome from "../src/pages/welcome.jsx";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import Feed from "../src/pages/feed.jsx";
 import FriendsPage from "./pages/friends.jsx";
@@ -18,6 +25,8 @@ import ContactSupport from "./pages/contactSupport.jsx";
 import AdminDashboard from "./pages/adminDashboard.jsx";
 import SavedPosts from "./pages/savedPosts.jsx";
 import api from "./services/api.js";
+
+const Messages = lazy(() => import("./pages/messages.jsx"));
 
 /*
  * Protect private Wavely routes.
@@ -220,6 +229,17 @@ function App() {
               element={
                 <ProtectedRoute user={user} authLoading={authLoading}>
                   <SavedPosts alluser={alluser} />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/messages"
+              element={
+                <ProtectedRoute user={user} authLoading={authLoading}>
+                  <Suspense fallback={<Loader />}>
+                    <Messages />
+                  </Suspense>
                 </ProtectedRoute>
               }
             />
