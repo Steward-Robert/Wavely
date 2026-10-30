@@ -7,14 +7,54 @@ import api from "../../services/api.js";
 const getAvatar = (user) =>
   user?.avatar?.avatar ?? user?.avatars?.[0]?.avatar ?? "/pfp ideas 🌑.jpg";
 
+const getStoryMediaRequestPath = (story) => {
+  if (!story?.id || typeof story.mediaUrl !== "string") return null;
+
+  try {
+    const mediaUrl = new URL(story.mediaUrl, window.location.origin);
+    const expectedPath = `/api/story/${encodeURIComponent(story.id)}/media`;
+
+    if (
+      mediaUrl.origin !== window.location.origin ||
+      mediaUrl.pathname !== expectedPath
+    ) {
+      return null;
+    }
+
+    return `/story/${encodeURIComponent(story.id)}/media`;
+  } catch {
+    return null;
+  }
+};
+
+const getStoryMediaFallback = (story, errors) =>
+  errors[story?.id] ||
+  (getStoryMediaRequestPath(story)
+    ? "Loading media..."
+    : "Story media is unavailable.");
+
 function Stories({ alluser = [], refreshKey = 0 }) {
   const user = useContext(UserContext);
   const [stories, setStories] = useState([]);
+  const [storyMedia, setStoryMedia] = useState({});
+  const [storyMediaErrors, setStoryMediaErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const markStoryMediaFailed = (storyId) => {
+    setStoryMediaErrors((current) => ({
+      ...current,
+      [storyId]: "Could not display this story media.",
+    }));
+    setStoryMedia((current) => {
+      if (!current[storyId]) return current;
+      const next = { ...current };
+      delete next[storyId];
+      return next;
+    });
+  };
   const groupedStories = useMemo(() => {
     const groups = new Map();
 
@@ -99,12 +139,7 @@ function Stories({ alluser = [], refreshKey = 0 }) {
         if (isCurrent) {
           setStories(
             Array.isArray(response.data.stories)
-              ? response.data.stories.map((story) => ({
-                  ...story,
-                  image: story.mediaUrl
-                    ? `${api.defaults.baseURL.replace(/\/+$/, "")}/story/${encodeURIComponent(story.id)}/media`
-                    : null,
-                }))
+              ? response.data.stories
               : [],
           );
         }
@@ -126,6 +161,54 @@ function Stories({ alluser = [], refreshKey = 0 }) {
       isCurrent = false;
     };
   }, [refreshKey]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const mediaObjectUrls = [];
+
+    for (const story of stories) {
+      const requestPath = getStoryMediaRequestPath(story);
+      if (!requestPath) continue;
+
+      api
+        .get(requestPath, { responseType: "blob" })
+        .then((response) => {
+          const objectUrl = URL.createObjectURL(response.data);
+          if (!isCurrent) {
+            URL.revokeObjectURL(objectUrl);
+            return;
+          }
+
+          mediaObjectUrls.push(objectUrl);
+          setStoryMedia((current) => ({
+            ...current,
+            [story.id]: objectUrl,
+          }));
+          setStoryMediaErrors((current) => {
+            const next = { ...current };
+            delete next[story.id];
+            return next;
+          });
+        })
+        .catch((requestError) => {
+          console.error(`Error loading media for story ${story.id}:`, requestError);
+          if (isCurrent) {
+            setStoryMediaErrors((current) => ({
+              ...current,
+              [story.id]:
+                requestError.response?.status === 404
+                  ? "Cette story n’est plus disponible."
+                  : "Impossible de charger le média. Réessayez plus tard.",
+            }));
+          }
+        });
+    }
+
+    return () => {
+      isCurrent = false;
+      mediaObjectUrls.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+    };
+  }, [stories]);
 
   useEffect(() => {
     const expireStories = () => {
@@ -250,22 +333,35 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               aria-label={ownStories ? "View My Story" : "Add to My Story"}
               className="group relative h-30 w-22 overflow-hidden rounded-2xl border border-white/30 bg-white/10 text-left shadow-xl shadow-black/20 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/20 sm:h-30 sm:w-25 sm:rounded- md:h- md:w-25 md:rounded-sm"
             >
-              {ownStories?.stories[0]?.mediaType === "video" ? (
+              {ownStories?.stories[0]?.mediaType === "video" &&
+              storyMedia[ownStories.stories[0].id] &&
+              !storyMediaErrors[ownStories.stories[0].id] ? (
                 <video
-                  src={ownStories.stories[0].image}
-                  crossOrigin="use-credentials"
+                  src={storyMedia[ownStories.stories[0].id]}
                   className="absolute inset-0 z-0 h-full w-full object-cover"
                   muted
+                  onError={() =>
+                    markStoryMediaFailed(ownStories.stories[0].id)
+                  }
                 />
-              ) : ownStories?.stories[0]?.image ? (
+              ) : ownStories?.stories[0]?.mediaType === "image" &&
+                storyMedia[ownStories.stories[0].id] &&
+                !storyMediaErrors[ownStories.stories[0].id] ? (
                 <img
-                  src={ownStories.stories[0].image}
-                  crossOrigin="use-credentials"
+                  src={storyMedia[ownStories.stories[0].id]}
                   alt=""
                   className="absolute inset-0 z-0 h-full w-full object-cover"
+                  onError={() =>
+                    markStoryMediaFailed(ownStories.stories[0].id)
+                  }
                 />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-300/20 via-slate-900 to-amber-200/15" />
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-300/20 via-slate-900 to-amber-200/15 px-2 text-center text-[10px] text-white/75">
+                  {getStoryMediaFallback(
+                    ownStories?.stories[0],
+                    storyMediaErrors,
+                  )}
+                </div>
               )}
               <div className="absolute right-1.5 top-0.5 z-20 h-9 w-9 rounded-full border-2 border-white/50 bg-black/20 md:top-2 md:right-3 sm:top-3">
                 <img
@@ -295,22 +391,28 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               key={storyUser.id}
               className="group relative h-30 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/30 bg-white/10 text-left shadow-xl shadow-black/20 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/20 sm:h-30 sm:w-25 sm:rounded- md:h- md:w-25 md:rounded-sm"
             >
-              {firstStory?.image && (
-                firstStory.mediaType === "video" ? (
-                  <video
-                    src={firstStory.image}
-                    crossOrigin="use-credentials"
-                    className="absolute inset-0 z-0 h-full w-full object-cover"
-                    muted
-                  />
-                ) : (
-                  <img
-                    src={firstStory.image}
-                    crossOrigin="use-credentials"
-                    alt=""
-                    className="absolute inset-0 z-0 h-full w-full object-cover"
-                  />
-                )
+              {firstStory?.mediaType === "video" &&
+              storyMedia[firstStory.id] &&
+              !storyMediaErrors[firstStory.id] ? (
+                <video
+                  src={storyMedia[firstStory.id]}
+                  className="absolute inset-0 z-0 h-full w-full object-cover"
+                  muted
+                  onError={() => markStoryMediaFailed(firstStory.id)}
+                />
+              ) : firstStory?.mediaType === "image" &&
+                storyMedia[firstStory.id] &&
+                !storyMediaErrors[firstStory.id] ? (
+                <img
+                  src={storyMedia[firstStory.id]}
+                  alt=""
+                  className="absolute inset-0 z-0 h-full w-full object-cover"
+                  onError={() => markStoryMediaFailed(firstStory.id)}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-cyan-300/20 via-slate-900 to-amber-200/15 px-2 text-center text-[10px] text-white/75">
+                  {getStoryMediaFallback(firstStory, storyMediaErrors)}
+                </div>
               )}
               <div className="absolute right-1.5 top-0.5 z-20 h-9 w-9 rounded-full border-2 border-white/50 bg-black/20 md:top-2 md:right-3 sm:top-3">
                 <img
@@ -390,22 +492,38 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               </button>
             </div>
 
-            {currentStory.mediaType === "video" ? (
+            {currentStory.mediaType === "video" &&
+            storyMedia[currentStory.id] &&
+            !storyMediaErrors[currentStory.id] ? (
               <video
-                src={currentStory.image}
-                crossOrigin="use-credentials"
+                src={storyMedia[currentStory.id]}
                 autoPlay
                 controls
                 playsInline
                 className="h-full w-full object-contain"
+                onError={() => markStoryMediaFailed(currentStory.id)}
               />
-            ) : (
+            ) : currentStory.mediaType === "image" &&
+              storyMedia[currentStory.id] &&
+              !storyMediaErrors[currentStory.id] ? (
               <img
-                src={currentStory.image}
-                crossOrigin="use-credentials"
+                src={storyMedia[currentStory.id]}
                 alt={`${currentUser.name} story`}
                 className="h-full w-full object-contain"
+                onError={() => markStoryMediaFailed(currentStory.id)}
               />
+            ) : (
+              <div
+                role={
+                  storyMediaErrors[currentStory.id] ||
+                  !getStoryMediaRequestPath(currentStory)
+                    ? "alert"
+                    : "status"
+                }
+                className="flex h-full w-full items-center justify-center px-8 text-center text-sm text-white/75"
+              >
+                {getStoryMediaFallback(currentStory, storyMediaErrors)}
+              </div>
             )}
             {currentStory.content && (
               <p className="absolute inset-x-5 bottom-8 z-20 rounded-xl bg-black/45 px-4 py-3 text-center text-white backdrop-blur-md">
