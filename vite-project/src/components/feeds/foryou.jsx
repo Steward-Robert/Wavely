@@ -60,14 +60,18 @@ function Foryou({
 
   const handleSave = async (post) => {
     if (savingPostIds.has(post.id)) return;
+
     const isSaved = savedPostIds.has(post.id);
+
     setSavingPostIds((current) => new Set(current).add(post.id));
     setSaveError("");
 
     try {
       const postPath = `/savedPost/${encodeURIComponent(post.id)}`;
+
       if (isSaved) {
         await api.delete(postPath);
+
         setSavedPostIds((current) => {
           const next = new Set(current);
           next.delete(post.id);
@@ -79,6 +83,7 @@ function Foryou({
       }
     } catch (requestError) {
       console.error("Error updating saved post:", requestError);
+
       setSaveError(
         requestError.response?.data?.message ||
           "Could not update your saved posts. Please try again.",
@@ -94,6 +99,7 @@ function Foryou({
 
   useEffect(() => {
     let isCurrent = true;
+
     const requests =
       requestsRef.current ||
       (requestsRef.current = {
@@ -109,6 +115,7 @@ function Foryou({
           const posts = Array.isArray(postsResult.value.data.posts)
             ? postsResult.value.data.posts
             : [];
+
           const uniquePosts = [
             ...new Map(
               posts
@@ -116,6 +123,7 @@ function Foryou({
                 .map((post) => [String(post.id), post]),
             ).values(),
           ];
+
           setAllPost(uniquePosts);
         } else {
           console.error("Error fetching posts:", postsResult.reason);
@@ -127,14 +135,17 @@ function Foryou({
           )
             ? savedPostsResult.value.data.savedPosts
             : [];
+
           setSavedPostIds(new Set(savedPosts.map((saved) => saved.postID)));
         } else {
           console.error("Error fetching saved posts:", savedPostsResult.reason);
+
           setSaveError(
             savedPostsResult.reason.response?.data?.message ||
               "Saved-post status could not be loaded.",
           );
         }
+
         setSavedStatusLoaded(true);
       },
     );
@@ -154,6 +165,7 @@ function Foryou({
           {likeError}
         </p>
       )}
+
       {saveError && (
         <p
           role="alert"
@@ -162,6 +174,7 @@ function Foryou({
           {saveError}
         </p>
       )}
+
       <div
         aria-label="Posts"
         className="mx-auto w-full"
@@ -173,7 +186,9 @@ function Foryou({
           </p>
         ) : (
           allPost.map((post) => {
-            const avatarUrl = post.author?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
+            const avatarUrl =
+              post.author?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
+
             const mediaItems = getPostMedia(post);
 
             return (
@@ -182,9 +197,11 @@ function Foryou({
                 className="mx-auto flex w-[98vw] items-center justify-center py-3 sm:mx-auto md:mx-auto md:w-[70vw] lg:w-[45vw]"
               >
                 <article className="w-full overflow-hidden rounded-[28px] border border-white/10 bg-[#05070b]/90 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.06),_transparent_55%)] p-4 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150">
+
                   {/* HEADER */}
                   <header className="flex items-center justify-between gap-4 text-amber-50">
                     <div className="flex gap-2">
+
                       {/* AVATAR */}
                       <div className="h-[50px] w-[50px] overflow-hidden rounded-full border border-white/15 bg-white/10 shadow-lg shadow-black/20">
                         <img
@@ -198,6 +215,7 @@ function Foryou({
                       <div className="min-w-0">
                         <p className="flex items-center gap-1.5 text-base font-semibold tracking-wide">
                           {post.author?.name || "Unknown user"}
+
                           {post.author?.role === "ADMIN" && (
                             <VerifiedBadge className="h-5 w-5" />
                           )}
@@ -221,7 +239,7 @@ function Foryou({
                   {/* CONTENT */}
                   {post.content && (
                     <div className="mt-5 rounded-2xl border border-white/5 bg-white/[0.02] px-3 py-3 text-amber-50 md:px-4">
-                      <p className="text-[15px] leading-7 text-amber-50/90">
+                      <p className="whitespace-pre-wrap break-words text-[15px] leading-7 text-amber-50/90">
                         {post.content}
                       </p>
                     </div>
@@ -238,6 +256,7 @@ function Foryou({
 
                   {/* ACTIONS */}
                   <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-gray-400">
+
                     {/* LIKE */}
                     <button
                       type="button"
@@ -247,7 +266,11 @@ function Foryou({
                       aria-label={
                         post.likedByUser ? "Unlike this post" : "Like this post"
                       }
-                      className={`flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 disabled:cursor-wait disabled:opacity-60 ${post.likedByUser ? "text-rose-400" : "text-gray-400 hover:text-rose-400"}`}
+                      className={`flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 disabled:cursor-wait disabled:opacity-60 ${
+                        post.likedByUser
+                          ? "text-rose-400"
+                          : "text-gray-400 hover:text-rose-400"
+                      }`}
                     >
                       <Heart
                         color="currentColor"
@@ -264,13 +287,17 @@ function Foryou({
                     <button
                       type="button"
                       onClick={() => onOpenComments(post.id)}
-                      aria-label={`View comments for ${post.author?.name || "this"} post`}
+                      aria-label={`View comments for ${
+                        post.author?.name || "this"
+                      } post`}
                       className="flex items-center gap-2 rounded-full px-2 py-1.5 transition-colors hover:bg-white/5 hover:text-yellow-200"
                     >
                       <MessageCircle aria-hidden="true" size={24} />
 
                       <p className="text-sm font-medium">
-                        {commentCounts[post.id] ?? post._count?.comments ?? 0}
+                        {commentCounts[post.id] ??
+                          post._count?.comments ??
+                          0}
                       </p>
                     </button>
 
@@ -278,12 +305,25 @@ function Foryou({
                     <button
                       type="button"
                       onClick={() => handleSave(post)}
-                      disabled={!savedStatusLoaded || savingPostIds.has(post.id)}
+                      disabled={
+                        !savedStatusLoaded || savingPostIds.has(post.id)
+                      }
                       aria-pressed={savedPostIds.has(post.id)}
-                      aria-label={savedPostIds.has(post.id) ? "Remove from saved posts" : "Save post"}
-                      className={`rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300 disabled:cursor-wait disabled:opacity-60 ${savedPostIds.has(post.id) ? "text-amber-300" : ""}`}
+                      aria-label={
+                        savedPostIds.has(post.id)
+                          ? "Remove from saved posts"
+                          : "Save post"
+                      }
+                      className={`rounded-full p-2 transition-colors hover:bg-white/5 hover:text-amber-300 disabled:cursor-wait disabled:opacity-60 ${
+                        savedPostIds.has(post.id) ? "text-amber-300" : ""
+                      }`}
                     >
-                      <Bookmark size={24} fill={savedPostIds.has(post.id) ? "currentColor" : "none"} />
+                      <Bookmark
+                        size={24}
+                        fill={
+                          savedPostIds.has(post.id) ? "currentColor" : "none"
+                        }
+                      />
                     </button>
                   </div>
                 </article>
