@@ -30,6 +30,7 @@ function PostField() {
 
     const formData = new FormData();
 
+    // Conserver le texte original et ses retours à la ligne
     formData.append("content", text);
 
     imgFiles.forEach((file) => {
@@ -83,6 +84,7 @@ function PostField() {
 
   const showVideoPreview = (event) => {
     const preview = event.currentTarget;
+
     if (Number.isFinite(preview.duration) && preview.duration > 0) {
       preview.currentTime = Math.min(0.1, preview.duration / 2);
     }
@@ -91,16 +93,18 @@ function PostField() {
   return (
     <div className="px-7 pb-7">
       {loading && <Loader />}
+
       <div className="rounded-2xl border border-white/10 bg-black/10 p-5">
         <h2 className="mb-4 text-lg font-semibold text-white">
           Create a new post
         </h2>
       </div>
+
       <div>
         <textarea
           placeholder="What's going on today?"
           value={text}
-          className="min-h-32 w-full resize-none rounded-2xl border border-white/10 bg-black/10 px-4 py-4 text-base text-white outline-none placeholder:text-white/35 transition focus:border-amber-200/45 focus:bg-black/15"
+          className="min-h-32 w-full resize-none whitespace-pre-wrap rounded-2xl border border-white/10 bg-black/10 px-4 py-4 text-base text-white outline-none placeholder:text-white/35 transition focus:border-amber-200/45 focus:bg-black/15"
           onChange={handleText}
         />
 
@@ -136,6 +140,7 @@ function PostField() {
                     alt={image.name}
                     className="h-34 w-35 rounded-xl object-cover ring-1 ring-white/15"
                   />
+
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
@@ -159,6 +164,7 @@ function PostField() {
                     onLoadedMetadata={showVideoPreview}
                     className="h-40 w-72 max-w-full rounded-xl object-cover ring-1 ring-white/15"
                   />
+
                   <button
                     type="button"
                     onClick={() => removeVideo(index)}
