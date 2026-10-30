@@ -120,6 +120,42 @@ function Stories({ alluser = [], refreshKey = 0 }) {
     };
   }, [refreshKey]);
 
+  useEffect(() => {
+    const expireStories = () => {
+      const now = Date.now();
+      const activeStories = stories.filter(
+        (story) => Date.parse(story.expiresAt) > now,
+      );
+
+      if (activeStories.length !== stories.length) {
+        setStories(activeStories);
+        setIsViewerOpen(false);
+      }
+    };
+
+    expireStories();
+    const now = Date.now();
+    const nextExpiration = stories.reduce((soonest, story) => {
+      const expiresAt = Date.parse(story.expiresAt);
+      return expiresAt > now ? Math.min(soonest, expiresAt) : soonest;
+    }, Number.POSITIVE_INFINITY);
+    const timeoutId = Number.isFinite(nextExpiration)
+      ? window.setTimeout(
+          expireStories,
+          Math.max(0, nextExpiration - now),
+        )
+      : null;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") expireStories();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      if (timeoutId !== null) window.clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [stories]);
+
   const deleteStory = async (storyId) => {
     try {
       await api.delete(`/story/${encodeURIComponent(storyId)}`);
