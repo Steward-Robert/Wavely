@@ -10,8 +10,6 @@ function PostMediaCarousel({
   const touchStartX = useRef(null);
   const videoRef = useRef(null);
 
-  if (mediaItems.length === 0) return null;
-
   const currentIndex = Math.min(activeIndex, mediaItems.length - 1);
   const media = mediaItems[currentIndex];
 
@@ -51,7 +49,9 @@ function PostMediaCarousel({
       observer.disconnect();
       video.pause();
     };
-  }, [currentIndex, media.url]);
+  }, [currentIndex, media?.url]);
+
+  if (mediaItems.length === 0) return null;
 
   return (
     <div
@@ -77,10 +77,7 @@ function PostMediaCarousel({
       }}
       role="group"
     >
-      <div
-        key={media.id ?? media.url}
-        className="post-media-enter w-full"
-      >
+      <div className="post-media-enter w-full">
         {media.mediaType === "video" ? (
           <video
             ref={videoRef}
