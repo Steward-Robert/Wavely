@@ -6,7 +6,6 @@ import {
   Plus,
   Settings,
   Users,
-  Waves,
 } from "lucide-react";
 import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -41,8 +40,12 @@ function Header() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#08090e]/80 px-4 py-3 backdrop-blur-xl sm:px-6">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(103,232,249,0.12)]">
-            <Waves size={22} strokeWidth={1.7} className="header-wave-motion" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(103,232,249,0.12)] overflow-hidden">
+            <img
+              src="/Abstract Logo _ For Sale_dm @logostrife if you….jpg"
+              alt="Wavely logo"
+              className="object-cover h-full w-full"
+            />
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-white sm:text-xl">
@@ -85,7 +88,9 @@ function Header() {
           </button>
           <button
             type="button"
-            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              isMenuOpen ? "Close navigation menu" : "Open navigation menu"
+            }
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation-menu"
             onClick={() => setIsMenuOpen((open) => !open)}

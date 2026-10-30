@@ -10,7 +10,6 @@ import {
   Sparkles,
   UserRound,
   Users,
-  Waves,
 } from "lucide-react";
 import Header from "../components/header.jsx";
 import LSidebar from "../components/sidebar/leftSidbar.jsx";
@@ -30,8 +29,7 @@ const features = [
   },
   {
     title: "Messages",
-    description:
-      "Keep in touch with friends through private conversations.",
+    description: "Keep in touch with friends through private conversations.",
     icon: MessageCircle,
   },
   {
@@ -96,8 +94,12 @@ function AboutWavely() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-80 w-[min(90vw,720px)] -translate-x-1/2 rounded-full bg-cyan-400/[0.07] blur-3xl" />
 
         <section className="relative border-b border-white/10 pb-14 text-center sm:pb-20  lg:w-[50vw] lg:block lg:mx-auto">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-200/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(103,232,249,0.12)]">
-            <Waves size={28} strokeWidth={1.5} />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-200/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(103,232,249,0.12)] overflow-hidden">
+            <img
+              src="/Abstract Logo _ For Sale_dm @logostrife if you….jpg"
+              alt="Wavely logo"
+              className="object-cover h-full w-full"
+            />
           </div>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.28em] text-amber-200/80">
             The Wavely story
@@ -109,9 +111,9 @@ function AboutWavely() {
             Connect. Share. Discover.
           </p>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-            Wavely is a social platform for sharing moments, building
-            meaningful connections, and discovering the people and
-            conversations that matter to you.
+            Wavely is a social platform for sharing moments, building meaningful
+            connections, and discovering the people and conversations that
+            matter to you.
           </p>
         </section>
 
@@ -130,8 +132,8 @@ function AboutWavely() {
                 </h2>
                 <p className="mt-4 max-w-3xl text-base leading-7 text-slate-300 ">
                   Wavely brings social interaction into one welcoming space.
-                  Share an update, catch up with friends, or discover new
-                  people while staying connected to your community.
+                  Share an update, catch up with friends, or discover new people
+                  while staying connected to your community.
                 </p>
               </div>
             </div>
@@ -190,8 +192,8 @@ function AboutWavely() {
             </p>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-slate-300">
               Wavely was created by Robert Steward, a self-taught developer
-              focused on building thoughtful web applications and useful
-              digital experiences.
+              focused on building thoughtful web applications and useful digital
+              experiences.
             </p>
           </div>
         </section>
@@ -228,8 +230,7 @@ function AboutWavely() {
           </p>
         </footer>
       </main>
-      <div className="fixed inset-x-0 bottom-0 z-60 md:hidden lg:hidden">
-      </div>
+      <div className="fixed inset-x-0 bottom-0 z-60 md:hidden lg:hidden"></div>
     </div>
   );
 }

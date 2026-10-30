@@ -22,19 +22,29 @@ function Welcome({ onAuthenticated }) {
         <div
           className="
             flex flex-1 flex-col justify-center
-            p-8 sm:p-10 md:p-14 lg:p-16
+            p-4 sm:p-8 md:p-10 lg:p-14
             bg-black/10
           "
         >
-          <h1
-            className="
+          <div>
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-200/20 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(103,232,249,0.12)] overflow-hidden mb-4">
+              <img
+                src="/Abstract Logo _ For Sale_dm @logostrife if you….jpg"
+                alt="Wavely logo"
+                className="object-cover h-full w-full"
+              />
+            </div>
+
+            <h1
+              className="
               mb-6
               text-3xl sm:text-4xl lg:text-4xl
               font-bold tracking-wide
             "
-          >
-            Welcome to Wavely
-          </h1>
+            >
+              Welcome to Wavely
+            </h1>
+          </div>
 
           <p
             className="
