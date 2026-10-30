@@ -98,7 +98,14 @@ function Stories({ alluser = [], refreshKey = 0 }) {
         const response = await api.get("/story");
         if (isCurrent) {
           setStories(
-            Array.isArray(response.data.stories) ? response.data.stories : [],
+            Array.isArray(response.data.stories)
+              ? response.data.stories.map((story) => ({
+                  ...story,
+                  image: story.mediaUrl
+                    ? `${api.defaults.baseURL.replace(/\/+$/, "")}/story/${encodeURIComponent(story.id)}/media`
+                    : null,
+                }))
+              : [],
           );
         }
       } catch (requestError) {
@@ -243,15 +250,17 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               aria-label={ownStories ? "View My Story" : "Add to My Story"}
               className="group relative h-30 w-22 overflow-hidden rounded-2xl border border-white/30 bg-white/10 text-left shadow-xl shadow-black/20 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/20 sm:h-30 sm:w-25 sm:rounded- md:h- md:w-25 md:rounded-sm"
             >
-              {ownStories?.stories[0]?.image?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? (
+              {ownStories?.stories[0]?.mediaType === "video" ? (
                 <video
                   src={ownStories.stories[0].image}
+                  crossOrigin="use-credentials"
                   className="absolute inset-0 z-0 h-full w-full object-cover"
                   muted
                 />
               ) : ownStories?.stories[0]?.image ? (
                 <img
                   src={ownStories.stories[0].image}
+                  crossOrigin="use-credentials"
                   alt=""
                   className="absolute inset-0 z-0 h-full w-full object-cover"
                 />
@@ -287,10 +296,20 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               className="group relative h-30 w-20 shrink-0 overflow-hidden rounded-2xl border border-white/30 bg-white/10 text-left shadow-xl shadow-black/20 backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/20 sm:h-30 sm:w-25 sm:rounded- md:h- md:w-25 md:rounded-sm"
             >
               {firstStory?.image && (
-                firstStory.image.match(/\.(mp4|webm|ogg)(\?|$)/i) ? (
-                  <video src={firstStory.image} className="absolute inset-0 z-0 h-full w-full object-cover" muted />
+                firstStory.mediaType === "video" ? (
+                  <video
+                    src={firstStory.image}
+                    crossOrigin="use-credentials"
+                    className="absolute inset-0 z-0 h-full w-full object-cover"
+                    muted
+                  />
                 ) : (
-                  <img src={firstStory.image} alt="" className="absolute inset-0 z-0 h-full w-full object-cover" />
+                  <img
+                    src={firstStory.image}
+                    crossOrigin="use-credentials"
+                    alt=""
+                    className="absolute inset-0 z-0 h-full w-full object-cover"
+                  />
                 )
               )}
               <div className="absolute right-1.5 top-0.5 z-20 h-9 w-9 rounded-full border-2 border-white/50 bg-black/20 md:top-2 md:right-3 sm:top-3">
@@ -371,11 +390,19 @@ function Stories({ alluser = [], refreshKey = 0 }) {
               </button>
             </div>
 
-            {currentStory.image?.match(/\.(mp4|webm|ogg)(\?|$)/i) ? (
-              <video src={currentStory.image} autoPlay controls playsInline className="h-full w-full object-contain" />
+            {currentStory.mediaType === "video" ? (
+              <video
+                src={currentStory.image}
+                crossOrigin="use-credentials"
+                autoPlay
+                controls
+                playsInline
+                className="h-full w-full object-contain"
+              />
             ) : (
               <img
                 src={currentStory.image}
+                crossOrigin="use-credentials"
                 alt={`${currentUser.name} story`}
                 className="h-full w-full object-contain"
               />
