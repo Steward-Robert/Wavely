@@ -5,16 +5,18 @@ import {
   LoaderCircle,
   MessageCircle,
   Paperclip,
+  Plus,
   X,
 } from "lucide-react";
 import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import Header from "../components/header.jsx";
 import LSidebar from "../components/sidebar/leftSidbar.jsx";
 import UserContext from "../context/UserContext.jsx";
+import { useFriendships } from "../context/useFriendships.js";
 import api, { socketBaseUrl } from "../services/api.js";
 
-const getAvatar = (user) =>
-  user?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
+const getAvatar = (user) => user?.avatar?.avatar ?? "/pfp ideas 🌑.jpg";
 
 const formatMessageTime = (date) =>
   new Intl.DateTimeFormat(undefined, {
@@ -35,12 +37,15 @@ const mergeMessage = (currentMessages, newMessage) => {
 
 function Messages() {
   const user = useContext(UserContext);
-  const [friends, setFriends] = useState([]);
+  const navigate = useNavigate();
+  const { friends, friendsLoading, friendsError, refreshFriends } =
+    useFriendships();
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [attachmentUrls, setAttachmentUrls] = useState({});
   const [attachmentErrors, setAttachmentErrors] = useState({});
+  const [isFriendPickerOpen, setIsFriendPickerOpen] = useState(false);
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,12 +63,8 @@ function Messages() {
     let isCurrent = true;
     const loadChatData = async () => {
       try {
-        const [friendsResponse, conversationsResponse] = await Promise.all([
-          api.get("/chat/friends"),
-          api.get("/chat/conversations"),
-        ]);
+        const conversationsResponse = await api.get("/chat/conversations");
         if (!isCurrent) return;
-        setFriends(friendsResponse.data.friends);
         setConversations(conversationsResponse.data.conversations);
         if (conversationsResponse.data.conversations.length > 0) {
           setIsLoadingMessages(true);
@@ -73,7 +74,7 @@ function Messages() {
         if (isCurrent) {
           setError(
             requestError.response?.data?.message ||
-              "Could not load messages. Please try again.",
+              "Could not load your conversations. Your friends are still available below.",
           );
         }
       } finally {
@@ -96,7 +97,9 @@ function Messages() {
 
     let isCurrent = true;
     api
-      .get(`/chat/conversations/${encodeURIComponent(activeConversation.id)}/messages`)
+      .get(
+        `/chat/conversations/${encodeURIComponent(activeConversation.id)}/messages`,
+      )
       .then((response) => {
         if (isCurrent) setMessages(response.data.messages);
       })
@@ -125,13 +128,9 @@ function Messages() {
     });
     const refreshChatData = async () => {
       try {
-        const [friendsResponse, conversationsResponse] = await Promise.all([
-          api.get("/chat/friends"),
-          api.get("/chat/conversations"),
-        ]);
+        const conversationsResponse = await api.get("/chat/conversations");
         if (!isCurrent) return;
         const latestConversations = conversationsResponse.data.conversations;
-        setFriends(friendsResponse.data.friends);
         setConversations(latestConversations);
 
         const currentId = activeConversationId.current;
@@ -144,7 +143,9 @@ function Messages() {
           activeFriendId.current = null;
           setActiveConversation(null);
           setMessages([]);
-          setError("This conversation is unavailable because you are no longer friends.");
+          setError(
+            "This conversation is unavailable because you are no longer friends.",
+          );
           return;
         }
 
@@ -156,7 +157,10 @@ function Messages() {
         }
       } catch (requestError) {
         if (isCurrent) {
-          console.error("Could not synchronize chat after reconnect:", requestError);
+          console.error(
+            "Could not synchronize chat after reconnect:",
+            requestError,
+          );
         }
       }
     };
@@ -201,26 +205,31 @@ function Messages() {
           }
         });
     });
-    socket.on("chat:friendship-removed", ({ friendId, userId: removedUserId }) => {
-      const peerId = removedUserId === user?.id ? friendId : removedUserId;
-      setFriends((current) => current.filter((friend) => friend.id !== peerId));
-      setConversations((current) =>
-        current.filter((conversation) => conversation.friend.id !== peerId),
-      );
-      if (activeFriendId.current === peerId) {
-        activeConversationId.current = null;
-        activeFriendId.current = null;
-        setActiveConversation(null);
-        setMessages([]);
-        setError("This conversation is unavailable because you are no longer friends.");
-      }
-    });
+    socket.on(
+      "chat:friendship-removed",
+      ({ friendId, userId: removedUserId }) => {
+        const peerId = removedUserId === user?.id ? friendId : removedUserId;
+        void refreshFriends();
+        setConversations((current) =>
+          current.filter((conversation) => conversation.friend.id !== peerId),
+        );
+        if (activeFriendId.current === peerId) {
+          activeConversationId.current = null;
+          activeFriendId.current = null;
+          setActiveConversation(null);
+          setMessages([]);
+          setError(
+            "This conversation is unavailable because you are no longer friends.",
+          );
+        }
+      },
+    );
 
     return () => {
       isCurrent = false;
       socket.disconnect();
     };
-  }, [user?.id]);
+  }, [refreshFriends, user?.id]);
 
   useEffect(() => {
     const pending = messages.filter(
@@ -303,6 +312,28 @@ function Messages() {
     }
   };
 
+  const chooseFriend = async (friend) => {
+    const existingConversation = conversations.find(
+      (conversation) => conversation.friend.id === friend.id,
+    );
+    if (existingConversation) {
+      activeConversationId.current = existingConversation.id;
+      activeFriendId.current = friend.id;
+      setIsLoadingMessages(true);
+      setMessages([]);
+      setContent("");
+      setSelectedFile(null);
+      formRef.current?.reset();
+      setError("");
+      setActiveConversation(existingConversation);
+      setIsFriendPickerOpen(false);
+      return;
+    }
+
+    await startConversation(friend);
+    setIsFriendPickerOpen(false);
+  };
+
   const sendMessage = async (event) => {
     event.preventDefault();
     if (!activeConversation || (!content.trim() && !selectedFile)) return;
@@ -357,12 +388,91 @@ function Messages() {
       <main className="mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-7xl px-3 py-4 md:pl-24 lg:pl-64">
         <section className="flex min-h-[calc(100dvh-6rem)] w-full overflow-hidden rounded-2xl border border-white/10 bg-[#05070b]/90 shadow-[0_18px_45px_rgba(0,0,0,0.45)]">
           <aside className="flex w-[38%] min-w-32 max-w-sm flex-col border-r border-white/10 sm:w-72">
-            <div className="border-b border-white/10 p-4">
+            <div className="flex items-center justify-between gap-2 border-b border-white/10 p-3 sm:p-4">
               <h1 className="text-xl font-semibold">Messages</h1>
-              <p className="mt-1 text-xs text-slate-400">
-                Private conversations with accepted friends
-              </p>
+              <button
+                type="button"
+                aria-label="New conversation"
+                aria-expanded={isFriendPickerOpen}
+                aria-controls="chat-friend-picker"
+                title="Start a new conversation"
+                onClick={() => setIsFriendPickerOpen((open) => !open)}
+                className="flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-cyan-200/25 bg-cyan-300/10 px-2 text-sm font-medium text-cyan-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/20 focus:outline-none focus:ring-2 focus:ring-cyan-200/50 sm:px-3"
+              >
+                <Plus size={17} aria-hidden="true" />
+                <span className="hidden sm:inline">New</span>
+              </button>
             </div>
+            {isFriendPickerOpen && (
+              <div
+                id="chat-friend-picker"
+                className="border-b border-white/10 p-3"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                    Choose a friend
+                  </h2>
+                  <button
+                    type="button"
+                    aria-label="Close friend picker"
+                    onClick={() => setIsFriendPickerOpen(false)}
+                    className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+                {friendsLoading ? (
+                  <p role="status" className="py-2 text-sm text-slate-400">
+                    Loading friends...
+                  </p>
+                ) : friendsError ? (
+                  <p role="alert" className="py-2 text-sm text-rose-200">
+                    {friendsError}
+                  </p>
+                ) : friends.length > 0 ? (
+                  <div className="max-h-48 overflow-y-auto">
+                    {friends.map((friend) => (
+                      <button
+                        type="button"
+                        key={friend.id}
+                        onClick={() => chooseFriend(friend)}
+                        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/8 focus:outline-none focus:ring-2 focus:ring-cyan-200/50"
+                      >
+                        <img
+                          src={getAvatar(friend)}
+                          alt=""
+                          className="h-9 w-9 shrink-0 rounded-full object-cover"
+                        />
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {friend.name}
+                        </span>
+                        <span className="text-xs text-cyan-100/70">
+                          {conversations.some(
+                            (conversation) =>
+                              conversation.friend.id === friend.id,
+                          )
+                            ? "Open"
+                            : "Start"}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-2">
+                    <p className="mb-2 text-sm text-slate-400">
+                      You need an accepted friend to start a conversation.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/fr")}
+                      className="text-sm font-medium text-cyan-100 underline underline-offset-2 hover:text-white"
+                    >
+                      Find friends
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="min-h-0 flex-1 overflow-y-auto">
               {isLoading ? (
                 <p className="p-4 text-sm text-slate-400">Loading chats...</p>
@@ -412,10 +522,16 @@ function Messages() {
                       </span>
                     </button>
                   ))}
-                  {friends.length > 0 && (
-                    <div className="border-t border-white/10 p-3">
-                      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Start a chat
+                  {friends.some(
+                    (friend) =>
+                      !conversations.some(
+                        (conversation) =>
+                          conversation.friend.id === friend.id,
+                      ),
+                  ) && (
+                    <div className="border-t border-white/10">
+                      <h2 className="px-3 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:px-4">
+                        Friends
                       </h2>
                       {friends
                         .filter(
@@ -429,24 +545,32 @@ function Messages() {
                           <button
                             type="button"
                             key={friend.id}
-                            onClick={() => startConversation(friend)}
-                            className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-white/5"
+                            onClick={() => chooseFriend(friend)}
+                            className="flex w-full items-center gap-3 border-b border-white/5 px-3 py-3 text-left transition hover:bg-white/5 sm:px-4"
                           >
                             <img
                               src={getAvatar(friend)}
                               alt=""
-                              className="h-9 w-9 rounded-full object-cover"
+                              className="h-10 w-10 shrink-0 rounded-full object-cover"
                             />
-                            <span className="truncate text-sm">{friend.name}</span>
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                              {friend.name}
+                            </span>
+                            <span className="text-xs text-cyan-100/70">
+                              Start
+                            </span>
                           </button>
                         ))}
                     </div>
                   )}
-                  {conversations.length === 0 && friends.length === 0 && (
-                    <p className="p-4 text-sm text-slate-400">
-                      Add an accepted friend to start messaging.
-                    </p>
-                  )}
+                  {!friendsLoading &&
+                    !friendsError &&
+                    conversations.length === 0 &&
+                    friends.length === 0 && (
+                      <p className="p-4 text-sm text-slate-400">
+                        Add an accepted friend to start messaging.
+                      </p>
+                    )}
                 </>
               )}
             </div>
@@ -519,13 +643,17 @@ function Messages() {
                                 {attachmentErrors[message.id]}
                               </p>
                             ) : attachmentUrls[message.id] ? (
-                              message.attachment.mimeType.startsWith("image/") ? (
+                              message.attachment.mimeType.startsWith(
+                                "image/",
+                              ) ? (
                                 <img
                                   src={attachmentUrls[message.id]}
                                   alt={message.attachment.name}
                                   className="max-h-72 max-w-full rounded-lg object-contain"
                                 />
-                              ) : message.attachment.mimeType.startsWith("video/") ? (
+                              ) : message.attachment.mimeType.startsWith(
+                                  "video/",
+                                ) ? (
                                 <video
                                   src={attachmentUrls[message.id]}
                                   controls
@@ -545,7 +673,10 @@ function Messages() {
                                 </a>
                               )
                             ) : (
-                              <p role="status" className="text-xs text-slate-400">
+                              <p
+                                role="status"
+                                className="text-xs text-slate-400"
+                              >
                                 Loading attachment...
                               </p>
                             )}
@@ -583,7 +714,9 @@ function Messages() {
                 >
                   <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-300 transition hover:bg-white/10 hover:text-white">
                     <Paperclip size={19} />
-                    <span className="sr-only">Attach an image, video, or PDF</span>
+                    <span className="sr-only">
+                      Attach an image, video, or PDF
+                    </span>
                     <input
                       type="file"
                       accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,application/pdf"
@@ -619,7 +752,9 @@ function Messages() {
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center text-slate-400">
                 <MessageCircle size={34} />
-                <p>Select a conversation or choose a friend to start chatting.</p>
+                <p>
+                  Select a conversation or choose a friend to start chatting.
+                </p>
                 {error && (
                   <p role="alert" className="text-sm text-rose-200">
                     {error}
