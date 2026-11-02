@@ -2,6 +2,10 @@ import { io } from "socket.io-client";
 import {
   ArrowLeft,
   ArrowUp,
+  Check,
+  CheckCheck,
+  CircleAlert,
+  Clock3,
   FileText,
   LoaderCircle,
   MessageCircle,
@@ -26,10 +30,29 @@ const formatMessageTime = (date) =>
   }).format(new Date(date));
 
 const mergeMessage = (currentMessages, newMessage) => {
-  if (currentMessages.some((message) => message.id === newMessage.id)) {
-    return currentMessages;
-  }
-  return [...currentMessages, newMessage].sort(
+  const existing = currentMessages.find(
+    (message) =>
+      message.id === newMessage.id ||
+      (newMessage.clientMessageId &&
+        message.clientMessageId === newMessage.clientMessageId),
+  );
+  const mergedMessage = existing
+    ? {
+        ...existing,
+        ...newMessage,
+        deliveredAt: newMessage.deliveredAt ?? existing.deliveredAt ?? null,
+        readAt: newMessage.readAt ?? existing.readAt ?? null,
+      }
+    : newMessage;
+  return [
+    ...currentMessages.filter(
+      (message) =>
+        message.id !== newMessage.id &&
+        (!newMessage.clientMessageId ||
+          message.clientMessageId !== newMessage.clientMessageId),
+    ),
+    mergedMessage,
+  ].sort(
     (first, second) =>
       new Date(first.createdAt).getTime() -
       new Date(second.createdAt).getTime(),
@@ -37,15 +60,35 @@ const mergeMessage = (currentMessages, newMessage) => {
 };
 
 const mergeMessages = (currentMessages, incomingMessages) => {
-  const messagesById = new Map(
-    currentMessages.map((message) => [message.id, message]),
-  );
-  incomingMessages.forEach((message) => messagesById.set(message.id, message));
-  return [...messagesById.values()].sort(
+  return incomingMessages
+    .map((message) => ({ ...message, sendStatus: undefined }))
+    .reduce(mergeMessage, currentMessages)
+    .sort(
     (first, second) =>
       new Date(first.createdAt).getTime() -
       new Date(second.createdAt).getTime(),
+    );
+};
+
+const getMessageStatus = (message) => {
+  if (message.sendStatus === "pending") return "pending";
+  if (message.sendStatus === "failed") return "failed";
+  if (message.readAt) return "read";
+  if (message.deliveredAt) return "delivered";
+  return "sent";
+};
+
+const formatLastSeen = (lastSeenAt) => {
+  if (!lastSeenAt) return "Hors ligne";
+  const minutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(lastSeenAt).getTime()) / 60000),
   );
+  if (minutes < 1) return "Vu à l’instant";
+  if (minutes < 60) return `Vu il y a ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Vu il y a ${hours} h`;
+  return `Vu il y a ${Math.floor(hours / 24)} j`;
 };
 
 function Messages() {
@@ -63,17 +106,47 @@ function Messages() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [isSending, setIsSending] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [socketError, setSocketError] = useState("");
+  const [presence, setPresence] = useState({});
+  const [typingUser, setTypingUser] = useState(null);
+  const [roomReady, setRoomReady] = useState(null);
   const [error, setError] = useState("");
   const bottomRef = useRef(null);
+  const messageListRef = useRef(null);
   const formRef = useRef(null);
   const socketRef = useRef(null);
   const activeConversationId = useRef(null);
   const activeFriendId = useRef(null);
   const joinedConversationId = useRef(null);
+  const authorizedConversationId = useRef(null);
   const attachmentUrlsRef = useRef({});
+  const pendingMessagesRef = useRef(new Map());
+  const serverConfirmedClientIdsRef = useRef(new Set());
+  const readMessageIdsRef = useRef(new Set());
+  const typingTimeoutRef = useRef(null);
+  const typingActiveRef = useRef(false);
+  const remoteTypingTimeoutRef = useRef(null);
+  const messagesRef = useRef(messages);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  const stopTyping = () => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    if (!typingActiveRef.current) return;
+    typingActiveRef.current = false;
+    if (socketRef.current?.connected && activeConversationId.current) {
+      socketRef.current.emit("chat:typing", {
+        conversationId: activeConversationId.current,
+        isTyping: false,
+      });
+    }
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -162,11 +235,18 @@ function Messages() {
         if (
           !isCurrent ||
           activeConversationId.current !== conversationId ||
-          result?.ok
+          !result
         ) {
           return;
         }
+        if (result?.ok) {
+          authorizedConversationId.current = conversationId;
+          setRoomReady({ conversationId });
+          return;
+        }
         joinedConversationId.current = null;
+        authorizedConversationId.current = null;
+        setRoomReady(null);
         setError(result?.message || "Could not join this conversation.");
       });
     };
@@ -249,12 +329,16 @@ function Messages() {
 
         socket.on("connect", () => {
           joinedConversationId.current = null;
+          authorizedConversationId.current = null;
           setSocketConnected(true);
           setSocketError("");
           void refreshChatData();
         });
         socket.on("disconnect", (reason) => {
           joinedConversationId.current = null;
+          authorizedConversationId.current = null;
+          typingActiveRef.current = false;
+          setTypingUser(null);
           setSocketConnected(false);
           if (reason === "io server disconnect") {
             void refreshSocketToken(true);
@@ -289,8 +373,30 @@ function Messages() {
                 new Date(first.updatedAt).getTime(),
             );
           });
+          if (
+            newMessage.sender.id === user?.id &&
+            newMessage.clientMessageId
+          ) {
+            serverConfirmedClientIdsRef.current.add(
+              newMessage.clientMessageId,
+            );
+            pendingMessagesRef.current.delete(newMessage.clientMessageId);
+          }
           if (activeConversationId.current === newMessage.conversationId) {
-            setMessages((current) => mergeMessage(current, newMessage));
+            setMessages((current) =>
+              mergeMessage(current, {
+                ...newMessage,
+                ...(newMessage.sender.id === user?.id
+                  ? { sendStatus: undefined }
+                  : {}),
+              }),
+            );
+          }
+          if (newMessage.sender.id !== user?.id) {
+            socket.emit("chat:delivered", {
+              conversationId: newMessage.conversationId,
+              messageId: newMessage.id,
+            });
           }
           api
             .get("/chat/conversations")
@@ -305,6 +411,50 @@ function Messages() {
               }
             });
         });
+        socket.on("chat:message-status", (status) => {
+          setMessages((current) =>
+            current.map((message) =>
+              status.messageIds.includes(message.id)
+                ? {
+                    ...message,
+                    deliveredAt:
+                      status.deliveredAt ?? message.deliveredAt ?? null,
+                    readAt: status.readAt ?? message.readAt ?? null,
+                  }
+                : message,
+            ),
+          );
+        });
+        socket.on("presence:update", ({ userId, isOnline, lastSeenAt }) => {
+          setPresence((current) => ({
+            ...current,
+            [userId]: { isOnline, lastSeenAt },
+          }));
+        });
+        socket.on("chat:typing", (typing) => {
+          if (
+            typing.conversationId !== activeConversationId.current ||
+            typing.userId === user?.id
+          ) {
+            return;
+          }
+          if (remoteTypingTimeoutRef.current) {
+            clearTimeout(remoteTypingTimeoutRef.current);
+          }
+          if (typing.isTyping) {
+            setTypingUser({ id: typing.userId, name: typing.name });
+            remoteTypingTimeoutRef.current = setTimeout(
+              () => {
+                setTypingUser(null);
+                remoteTypingTimeoutRef.current = null;
+              },
+              5000,
+            );
+          } else {
+            setTypingUser(null);
+            remoteTypingTimeoutRef.current = null;
+          }
+        });
         socket.on(
           "chat:friendship-removed",
           ({ friendId, userId: removedUserId }) => {
@@ -317,6 +467,15 @@ function Messages() {
               activeConversationId.current = null;
               activeFriendId.current = null;
               joinedConversationId.current = null;
+              authorizedConversationId.current = null;
+              setRoomReady(null);
+              typingActiveRef.current = false;
+              setTypingUser(null);
+              setPresence((current) => {
+                const next = { ...current };
+                delete next[peerId];
+                return next;
+              });
               setActiveConversation(null);
               setMessages([]);
               setError(
@@ -342,6 +501,7 @@ function Messages() {
     return () => {
       isCurrent = false;
       joinedConversationId.current = null;
+      authorizedConversationId.current = null;
       if (socketRef.current === socket) socketRef.current = null;
       socket?.disconnect();
     };
@@ -356,29 +516,49 @@ function Messages() {
       joinedConversationId.current &&
       joinedConversationId.current !== conversationId
     ) {
+      if (typingActiveRef.current) {
+        typingActiveRef.current = false;
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = null;
+        }
+        socket.emit("chat:typing", {
+          conversationId: joinedConversationId.current,
+          isTyping: false,
+        });
+      }
       socket.emit("chat:leave", {
         conversationId: joinedConversationId.current,
       });
       joinedConversationId.current = null;
+      authorizedConversationId.current = null;
     }
 
-    if (!conversationId) return;
+    if (!conversationId) {
+      return;
+    }
     if (joinedConversationId.current === conversationId) return;
     joinedConversationId.current = conversationId;
     socket.emit("chat:join", { conversationId }, (result) => {
-      if (
-        activeConversationId.current === conversationId &&
-        !result?.ok
-      ) {
+      if (activeConversationId.current !== conversationId) return;
+      if (result?.ok) {
+        authorizedConversationId.current = conversationId;
+        setRoomReady({ conversationId });
+      } else {
         joinedConversationId.current = null;
+        authorizedConversationId.current = null;
+        setRoomReady(null);
         setError(result?.message || "Could not join this conversation.");
       }
     });
-  }, [activeConversation?.id]);
+  }, [activeConversation?.id, user?.id]);
 
   useEffect(() => {
     const pending = messages.filter(
-      (message) => message.attachment && !attachmentUrlsRef.current[message.id],
+      (message) =>
+        message.attachment &&
+        !message.sendStatus &&
+        !attachmentUrlsRef.current[message.id],
     );
     if (pending.length === 0) return undefined;
 
@@ -427,6 +607,197 @@ function Messages() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, activeConversation?.id]);
+
+  useEffect(() => {
+    const container = messageListRef.current;
+    const conversationId = activeConversation?.id;
+    if (
+      !container ||
+      !conversationId ||
+      roomReady?.conversationId !== conversationId ||
+      !socketConnected
+    ) {
+      return undefined;
+    }
+
+    const markVisibleMessagesAsRead = () => {
+      const socket = socketRef.current;
+      if (
+        document.visibilityState !== "visible" ||
+        !socket?.connected ||
+        authorizedConversationId.current !== conversationId
+      ) {
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      if (!containerRect.width || !containerRect.height) return;
+
+      const visibleMessageIds = [];
+      container
+        .querySelectorAll("[data-message-id]")
+        .forEach((element) => {
+          const messageId = element.dataset.messageId;
+          if (!messageId || readMessageIdsRef.current.has(messageId)) return;
+          const message = messagesRef.current.find(
+            (item) => item.id === messageId,
+          );
+          if (
+            !message ||
+            message.sender.id === user?.id ||
+            message.sendStatus
+          ) {
+            return;
+          }
+
+          const rect = element.getBoundingClientRect();
+          const visibleWidth = Math.max(
+            0,
+            Math.min(rect.right, containerRect.right) -
+              Math.max(rect.left, containerRect.left),
+          );
+          const visibleHeight = Math.max(
+            0,
+            Math.min(rect.bottom, containerRect.bottom) -
+              Math.max(rect.top, containerRect.top),
+          );
+          const visibleArea = visibleWidth * visibleHeight;
+          const totalArea = rect.width * rect.height;
+          if (totalArea > 0 && visibleArea / totalArea >= 0.5) {
+            visibleMessageIds.push(messageId);
+          }
+        });
+
+      if (visibleMessageIds.length === 0) return;
+      visibleMessageIds.forEach((messageId) =>
+        readMessageIdsRef.current.add(messageId),
+      );
+      socket.emit("chat:read", {
+        conversationId,
+        messageIds: visibleMessageIds,
+      });
+    };
+
+    markVisibleMessagesAsRead();
+    container.addEventListener("scroll", markVisibleMessagesAsRead, {
+      passive: true,
+    });
+    document.addEventListener("visibilitychange", markVisibleMessagesAsRead);
+    window.addEventListener("resize", markVisibleMessagesAsRead);
+    return () => {
+      container.removeEventListener("scroll", markVisibleMessagesAsRead);
+      document.removeEventListener(
+        "visibilitychange",
+        markVisibleMessagesAsRead,
+      );
+      window.removeEventListener("resize", markVisibleMessagesAsRead);
+    };
+  }, [
+    activeConversation?.id,
+    messages,
+    roomReady,
+    socketConnected,
+    user?.id,
+  ]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    const friendId = activeConversation?.friend?.id;
+    const conversationId = activeConversation?.id;
+    if (!socketConnected || !socket || !friendId) return undefined;
+
+    socket.emit("presence:watch", { userId: friendId }, (result) => {
+      if (result?.ok) {
+        setPresence((current) => ({
+          ...current,
+          [friendId]: {
+            isOnline: result.isOnline,
+            lastSeenAt: result.lastSeenAt,
+          },
+        }));
+      }
+    });
+
+    return () => {
+      socket.emit("presence:unwatch", { userId: friendId });
+      if (typingActiveRef.current && conversationId) {
+        socket.emit("chat:typing", {
+          conversationId,
+          isTyping: false,
+        });
+      }
+      setTypingUser(null);
+      typingActiveRef.current = false;
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (remoteTypingTimeoutRef.current) {
+        clearTimeout(remoteTypingTimeoutRef.current);
+        remoteTypingTimeoutRef.current = null;
+      }
+    };
+  }, [activeConversation?.friend?.id, activeConversation?.id, socketConnected]);
+
+  useEffect(() => {
+    const markAsRead = () => {
+      const socket = socketRef.current;
+      const conversationId = activeConversationId.current;
+      if (
+        document.visibilityState === "visible" &&
+        socket?.connected &&
+        conversationId &&
+        authorizedConversationId.current === conversationId
+      ) {
+        socket.emit("chat:read", {
+          conversationId,
+          messageIds: messagesRef.current
+            .filter(
+              (message) =>
+                message.sender.id !== user?.id && !message.sendStatus,
+            )
+            .map((message) => message.id),
+        });
+      }
+    };
+    markAsRead();
+    document.addEventListener("visibilitychange", markAsRead);
+    return () => document.removeEventListener("visibilitychange", markAsRead);
+  }, [activeConversation?.id, messages.length, socketConnected, user?.id]);
+
+  useEffect(
+    () => () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (remoteTypingTimeoutRef.current) {
+        clearTimeout(remoteTypingTimeoutRef.current);
+      }
+      if (typingActiveRef.current && socketRef.current?.connected) {
+        socketRef.current.emit("chat:typing", {
+          conversationId: activeConversationId.current,
+          isTyping: false,
+        });
+      }
+      pendingMessagesRef.current.clear();
+      serverConfirmedClientIdsRef.current.clear();
+    },
+    [],
+  );
+
+  const handleContentChange = (value) => {
+    setContent(value);
+    const socket = socketRef.current;
+    const conversationId = activeConversationId.current;
+    if (!value.trim() || !socket?.connected || !conversationId) {
+      stopTyping();
+      return;
+    }
+    if (!typingActiveRef.current) {
+      typingActiveRef.current = true;
+      socket.emit("chat:typing", { conversationId, isTyping: true });
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(stopTyping, 1200);
+  };
 
   const startConversation = async (friend) => {
     setError("");
@@ -479,23 +850,37 @@ function Messages() {
     setIsFriendPickerOpen(false);
   };
 
-  const sendMessage = async (event) => {
-    event.preventDefault();
-    if (!activeConversation || (!content.trim() && !selectedFile)) return;
-
-    setIsSending(true);
+  const sendPendingMessage = async (pendingMessage) => {
+    const { clientMessageId, conversationId, content: draft, file } =
+      pendingMessage;
+    pendingMessagesRef.current.set(clientMessageId, pendingMessage);
+    setMessages((current) =>
+      mergeMessage(current, {
+        ...pendingMessage.optimisticMessage,
+        sendStatus: "pending",
+        sendError: "",
+      }),
+    );
     setError("");
     const formData = new FormData();
-    if (content.trim()) formData.append("content", content.trim());
-    if (selectedFile) formData.append("attachment", selectedFile);
-
+    formData.append("clientMessageId", clientMessageId);
+    if (draft) formData.append("content", draft);
+    if (file) formData.append("attachment", file);
+    stopTyping();
     try {
       const response = await api.post(
-        `/chat/conversations/${encodeURIComponent(activeConversation.id)}/messages`,
+        `/chat/conversations/${encodeURIComponent(conversationId)}/messages`,
         formData,
       );
-      const sentMessage = response.data.message;
-      setMessages((current) => mergeMessage(current, sentMessage));
+      const sentMessage = {
+        ...response.data.message,
+        sendStatus: undefined,
+      };
+      serverConfirmedClientIdsRef.current.delete(clientMessageId);
+      pendingMessagesRef.current.delete(clientMessageId);
+      setMessages((current) =>
+        mergeMessage(current, sentMessage),
+      );
       setConversations((current) =>
         current
           .map((conversation) =>
@@ -513,17 +898,65 @@ function Messages() {
               new Date(first.updatedAt).getTime(),
           ),
       );
-      setContent("");
-      setSelectedFile(null);
-      formRef.current?.reset();
     } catch (requestError) {
-      setError(
+      if (serverConfirmedClientIdsRef.current.has(clientMessageId)) {
+        serverConfirmedClientIdsRef.current.delete(clientMessageId);
+        pendingMessagesRef.current.delete(clientMessageId);
+        return;
+      }
+      const message =
         requestError.response?.data?.message ||
-          "Could not send this message. Please try again.",
+        "Could not send this message. Tap to retry.";
+      setMessages((current) =>
+        current.map((item) =>
+          item.clientMessageId === clientMessageId
+            ? { ...item, sendStatus: "failed", sendError: message }
+            : item,
+        ),
       );
-    } finally {
-      setIsSending(false);
     }
+  };
+
+  const sendMessage = (event) => {
+    event.preventDefault();
+    const conversationId = activeConversation?.id;
+    const draft = content.trim();
+    const file = selectedFile;
+    if (!conversationId || (!draft && !file)) return;
+
+    const clientMessageId = crypto.randomUUID();
+    const optimisticMessage = {
+      id: `pending:${clientMessageId}`,
+      clientMessageId,
+      conversationId,
+      content: draft || null,
+      createdAt: new Date().toISOString(),
+      sender: {
+        id: user.id,
+        name: user.name,
+        avatar: user.avatar,
+      },
+      attachment: file
+        ? { name: file.name, mimeType: file.type, mediaUrl: null }
+        : null,
+      sendStatus: "pending",
+    };
+    setMessages((current) => mergeMessage(current, optimisticMessage));
+    setContent("");
+    setSelectedFile(null);
+    formRef.current?.reset();
+    void sendPendingMessage({
+      clientMessageId,
+      conversationId,
+      content: draft,
+      file,
+      optimisticMessage,
+    });
+  };
+
+  const retryMessage = (message) => {
+    const pending = pendingMessagesRef.current.get(message.clientMessageId);
+    if (pending) void sendPendingMessage(pending);
   };
 
   return (
@@ -652,11 +1085,16 @@ function Messages() {
                           : ""
                       }`}
                     >
-                      <img
-                        src={getAvatar(conversation.friend)}
-                        alt=""
-                        className="h-10 w-10 shrink-0 rounded-full object-cover"
-                      />
+                      <span className="relative shrink-0">
+                        <img
+                          src={getAvatar(conversation.friend)}
+                          alt=""
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                        {presence[conversation.friend.id]?.isOnline && (
+                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#05070b] bg-emerald-400" />
+                        )}
+                      </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">
                           {conversation.friend.name}
@@ -751,17 +1189,26 @@ function Messages() {
                   >
                     <ArrowLeft size={20} aria-hidden="true" />
                   </button>
-                  <img
-                    src={getAvatar(activeConversation.friend)}
-                    alt=""
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
+                  <span className="relative shrink-0">
+                    <img
+                      src={getAvatar(activeConversation.friend)}
+                      alt=""
+                      className="h-10 w-10 rounded-full object-cover"
+                    />
+                    {presence[activeConversation.friend.id]?.isOnline && (
+                      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#05070b] bg-emerald-400" />
+                    )}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <h2 className="truncate font-medium">
                       {activeConversation.friend.name}
                     </h2>
                     <p className="text-xs text-slate-400">
-                      {socketConnected ? "Connected" : "Reconnecting..."}
+                      {presence[activeConversation.friend.id]?.isOnline
+                        ? "En ligne"
+                        : formatLastSeen(
+                            presence[activeConversation.friend.id]?.lastSeenAt,
+                          )}
                     </p>
                   </div>
                   <MessageCircle
@@ -789,6 +1236,7 @@ function Messages() {
                 )}
                 <div
                   aria-live="polite"
+                  ref={messageListRef}
                   className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4"
                 >
                   {isLoadingMessages ? (
@@ -804,6 +1252,7 @@ function Messages() {
                     messages.map((message) => (
                       <article
                         key={message.id}
+                        data-message-id={message.id}
                         className={`max-w-[85%] rounded-2xl px-3 py-2 ${
                           message.sender.id === user?.id
                             ? "ml-auto bg-cyan-300/15"
@@ -817,7 +1266,16 @@ function Messages() {
                         )}
                         {message.attachment && (
                           <div className="mt-2">
-                            {attachmentErrors[message.id] ? (
+                            {message.sendStatus ? (
+                              <p className="max-w-56 truncate text-xs text-slate-300">
+                                {message.attachment.name}
+                                {message.sendStatus === "pending"
+                                  ? " · Sending..."
+                                  : message.sendStatus === "failed"
+                                    ? " · Not sent"
+                                    : ""}
+                              </p>
+                            ) : attachmentErrors[message.id] ? (
                               <p role="alert" className="text-xs text-rose-200">
                                 {attachmentErrors[message.id]}
                               </p>
@@ -861,11 +1319,76 @@ function Messages() {
                             )}
                           </div>
                         )}
-                        <time className="mt-1 block text-right text-[10px] text-slate-400">
-                          {formatMessageTime(message.createdAt)}
-                        </time>
+                        <div className="mt-1 flex items-center justify-end gap-1.5">
+                          <time className="text-[10px] text-slate-400">
+                            {formatMessageTime(message.createdAt)}
+                          </time>
+                          {message.sender.id === user?.id &&
+                            (getMessageStatus(message) === "failed" ? (
+                              <button
+                                type="button"
+                                aria-label="Échec d’envoi. Réessayer"
+                                title={
+                                  message.sendError || "Cliquer pour réessayer"
+                                }
+                                onClick={() => retryMessage(message)}
+                                className="rounded-full p-0.5 text-rose-300 hover:bg-rose-300/10"
+                              >
+                                <CircleAlert size={14} aria-hidden="true" />
+                              </button>
+                            ) : (
+                              <span
+                                title={
+                                  getMessageStatus(message) === "pending"
+                                    ? "En attente d’envoi"
+                                    : getMessageStatus(message) === "read"
+                                          ? "Lu"
+                                      : getMessageStatus(message) ===
+                                          "delivered"
+                                            ? "Reçu"
+                                            : "Envoyé"
+                                }
+                                className={
+                                  getMessageStatus(message) === "read"
+                                    ? "text-cyan-300"
+                                    : getMessageStatus(message) ===
+                                        "delivered"
+                                      ? "text-slate-300"
+                                      : "text-slate-400"
+                                }
+                              >
+                                {getMessageStatus(message) === "pending" ? (
+                                  <Clock3 size={13} aria-hidden="true" />
+                                ) : getMessageStatus(message) === "read" ||
+                                  getMessageStatus(message) === "delivered" ? (
+                                  <CheckCheck size={14} aria-hidden="true" />
+                                ) : (
+                                  <Check size={14} aria-hidden="true" />
+                                )}
+                              </span>
+                            ))}
+                        </div>
                       </article>
                     ))
+                  )}
+                  {typingUser && (
+                    <p
+                      role="status"
+                      className="mr-auto flex items-center gap-1 rounded-2xl bg-white/8 px-3 py-2 text-xs text-slate-300"
+                    >
+                      <span>
+                        {typingUser.name || "Votre ami"} est en train d’écrire
+                      </span>
+                      <span className="flex gap-0.5" aria-hidden="true">
+                        <span className="animate-bounce">.</span>
+                        <span className="animate-bounce [animation-delay:120ms]">
+                          .
+                        </span>
+                        <span className="animate-bounce [animation-delay:240ms]">
+                          .
+                        </span>
+                      </span>
+                    </p>
                   )}
                   <div ref={bottomRef} />
                 </div>
@@ -908,7 +1431,9 @@ function Messages() {
                   <textarea
                     aria-label="Write a message"
                     value={content}
-                    onChange={(event) => setContent(event.target.value)}
+                    onChange={(event) =>
+                      handleContentChange(event.target.value)
+                    }
                     maxLength={2000}
                     rows={1}
                     placeholder="Write a message..."
@@ -916,15 +1441,11 @@ function Messages() {
                   />
                   <button
                     type="submit"
-                    disabled={isSending || (!content.trim() && !selectedFile)}
+                    disabled={!content.trim() && !selectedFile}
                     aria-label="Send message"
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-200 text-slate-950 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {isSending ? (
-                      <LoaderCircle className="animate-spin" size={18} />
-                    ) : (
-                      <ArrowUp size={19} />
-                    )}
+                    <ArrowUp size={19} />
                   </button>
                 </form>
               </>
