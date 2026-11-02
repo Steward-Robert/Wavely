@@ -36,6 +36,18 @@ const mergeMessage = (currentMessages, newMessage) => {
   );
 };
 
+const mergeMessages = (currentMessages, incomingMessages) => {
+  const messagesById = new Map(
+    currentMessages.map((message) => [message.id, message]),
+  );
+  incomingMessages.forEach((message) => messagesById.set(message.id, message));
+  return [...messagesById.values()].sort(
+    (first, second) =>
+      new Date(first.createdAt).getTime() -
+      new Date(second.createdAt).getTime(),
+  );
+};
+
 function Messages() {
   const user = useContext(UserContext);
   const navigate = useNavigate();
@@ -53,11 +65,14 @@ function Messages() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [socketError, setSocketError] = useState("");
   const [error, setError] = useState("");
   const bottomRef = useRef(null);
   const formRef = useRef(null);
+  const socketRef = useRef(null);
   const activeConversationId = useRef(null);
   const activeFriendId = useRef(null);
+  const joinedConversationId = useRef(null);
   const attachmentUrlsRef = useRef({});
 
   useEffect(() => {
@@ -102,7 +117,11 @@ function Messages() {
         `/chat/conversations/${encodeURIComponent(activeConversation.id)}/messages`,
       )
       .then((response) => {
-        if (isCurrent) setMessages(response.data.messages);
+        if (isCurrent) {
+          setMessages((current) =>
+            mergeMessages(current, response.data.messages),
+          );
+        }
       })
       .catch((requestError) => {
         if (isCurrent) {
@@ -123,10 +142,35 @@ function Messages() {
 
   useEffect(() => {
     let isCurrent = true;
-    const socket = io(socketBaseUrl, {
-      withCredentials: true,
-      transports: ["websocket", "polling"],
-    });
+    let socket;
+    let refreshingAuth = false;
+
+    const joinConversationRoom = (conversationId) => {
+      if (!socket?.connected || !conversationId) return;
+      const previousConversationId = joinedConversationId.current;
+      if (previousConversationId === conversationId) return;
+      if (
+        previousConversationId &&
+        previousConversationId !== conversationId
+      ) {
+        socket.emit("chat:leave", {
+          conversationId: previousConversationId,
+        });
+      }
+      joinedConversationId.current = conversationId;
+      socket.emit("chat:join", { conversationId }, (result) => {
+        if (
+          !isCurrent ||
+          activeConversationId.current !== conversationId ||
+          result?.ok
+        ) {
+          return;
+        }
+        joinedConversationId.current = null;
+        setError(result?.message || "Could not join this conversation.");
+      });
+    };
+
     const refreshChatData = async () => {
       try {
         const conversationsResponse = await api.get("/chat/conversations");
@@ -154,7 +198,10 @@ function Messages() {
           `/chat/conversations/${encodeURIComponent(currentId)}/messages`,
         );
         if (isCurrent && activeConversationId.current === currentId) {
-          setMessages(messagesResponse.data.messages);
+          setMessages((current) =>
+            mergeMessages(current, messagesResponse.data.messages),
+          );
+          joinConversationRoom(currentId);
         }
       } catch (requestError) {
         if (isCurrent) {
@@ -166,71 +213,168 @@ function Messages() {
       }
     };
 
-    socket.on("connect", () => {
-      setSocketConnected(true);
-      void refreshChatData();
-    });
-    socket.on("disconnect", () => setSocketConnected(false));
-    socket.on("connect_error", (socketError) => {
-      setSocketConnected(false);
-      console.error("Chat connection failed:", socketError);
-    });
-    socket.on("chat:message", (newMessage) => {
-      setConversations((current) => {
-        const updated = current.map((conversation) =>
-          conversation.id === newMessage.conversationId
-            ? {
-                ...conversation,
-                updatedAt: newMessage.createdAt,
-                lastMessage: newMessage,
-              }
-            : conversation,
-        );
-        return updated.sort(
-          (first, second) =>
-            new Date(second.updatedAt).getTime() -
-            new Date(first.updatedAt).getTime(),
-        );
-      });
-      if (activeConversationId.current === newMessage.conversationId) {
-        setMessages((current) => mergeMessage(current, newMessage));
+    const refreshSocketToken = async (reconnect) => {
+      if (!isCurrent || !socket || refreshingAuth) return;
+      refreshingAuth = true;
+      try {
+        const response = await api.get("/chat/socket-token");
+        if (!isCurrent) return;
+        socket.auth = { token: response.data.token };
+        setSocketError("");
+        if (reconnect && !socket.connected) socket.connect();
+      } catch (requestError) {
+        if (isCurrent) {
+          const message =
+            requestError.response?.data?.message ||
+            "Real-time chat authentication failed. Please reload the page.";
+          setSocketError(message);
+          console.error("Could not refresh chat authentication:", requestError);
+        }
+      } finally {
+        refreshingAuth = false;
       }
-      api
-        .get("/chat/conversations")
-        .then((response) => {
-          if (isCurrent) setConversations(response.data.conversations);
-        })
-        .catch((requestError) => {
-          if (isCurrent) {
-            console.error("Could not refresh chat list:", requestError);
+    };
+
+    const connectSocket = async () => {
+      try {
+        const response = await api.get("/chat/socket-token");
+        if (!isCurrent) return;
+        socket = io(socketBaseUrl, {
+          auth: { token: response.data.token },
+          withCredentials: true,
+          transports: ["websocket", "polling"],
+          autoConnect: false,
+        });
+        socketRef.current = socket;
+
+        socket.on("connect", () => {
+          joinedConversationId.current = null;
+          setSocketConnected(true);
+          setSocketError("");
+          void refreshChatData();
+        });
+        socket.on("disconnect", (reason) => {
+          joinedConversationId.current = null;
+          setSocketConnected(false);
+          if (reason === "io server disconnect") {
+            void refreshSocketToken(true);
           }
         });
-    });
-    socket.on(
-      "chat:friendship-removed",
-      ({ friendId, userId: removedUserId }) => {
-        const peerId = removedUserId === user?.id ? friendId : removedUserId;
-        void refreshFriends();
-        setConversations((current) =>
-          current.filter((conversation) => conversation.friend.id !== peerId),
-        );
-        if (activeFriendId.current === peerId) {
-          activeConversationId.current = null;
-          activeFriendId.current = null;
-          setActiveConversation(null);
-          setMessages([]);
-          setError(
-            "This conversation is unavailable because you are no longer friends.",
+        socket.on("connect_error", (connectionError) => {
+          setSocketConnected(false);
+          setSocketError(
+            connectionError.message === "Unauthorized"
+              ? "Real-time chat authentication expired. Reconnecting..."
+              : "Real-time chat is unavailable. Reconnecting...",
           );
+          console.error("Chat connection failed:", connectionError);
+          if (connectionError.message === "Unauthorized") {
+            void refreshSocketToken(!socket.active);
+          }
+        });
+        socket.on("chat:message", (newMessage) => {
+          setConversations((current) => {
+            const updated = current.map((conversation) =>
+              conversation.id === newMessage.conversationId
+                ? {
+                    ...conversation,
+                    updatedAt: newMessage.createdAt,
+                    lastMessage: newMessage,
+                  }
+                : conversation,
+            );
+            return updated.sort(
+              (first, second) =>
+                new Date(second.updatedAt).getTime() -
+                new Date(first.updatedAt).getTime(),
+            );
+          });
+          if (activeConversationId.current === newMessage.conversationId) {
+            setMessages((current) => mergeMessage(current, newMessage));
+          }
+          api
+            .get("/chat/conversations")
+            .then((conversationsResponse) => {
+              if (isCurrent) {
+                setConversations(conversationsResponse.data.conversations);
+              }
+            })
+            .catch((requestError) => {
+              if (isCurrent) {
+                console.error("Could not refresh chat list:", requestError);
+              }
+            });
+        });
+        socket.on(
+          "chat:friendship-removed",
+          ({ friendId, userId: removedUserId }) => {
+            const peerId = removedUserId === user?.id ? friendId : removedUserId;
+            void refreshFriends();
+            setConversations((current) =>
+              current.filter((conversation) => conversation.friend.id !== peerId),
+            );
+            if (activeFriendId.current === peerId) {
+              activeConversationId.current = null;
+              activeFriendId.current = null;
+              joinedConversationId.current = null;
+              setActiveConversation(null);
+              setMessages([]);
+              setError(
+                "This conversation is unavailable because you are no longer friends.",
+              );
+            }
+          },
+        );
+        socket.connect();
+      } catch (requestError) {
+        if (isCurrent) {
+          setSocketError(
+            requestError.response?.data?.message ||
+              "Could not initialize real-time chat.",
+          );
+          console.error("Could not initialize real-time chat:", requestError);
         }
-      },
-    );
+      }
+    };
+
+    void connectSocket();
 
     return () => {
       isCurrent = false;
-      socket.disconnect();
+      joinedConversationId.current = null;
+      if (socketRef.current === socket) socketRef.current = null;
+      socket?.disconnect();
     };
   }, [refreshFriends, user?.id]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    const conversationId = activeConversation?.id;
+    if (!socket?.connected) return;
+
+    if (
+      joinedConversationId.current &&
+      joinedConversationId.current !== conversationId
+    ) {
+      socket.emit("chat:leave", {
+        conversationId: joinedConversationId.current,
+      });
+      joinedConversationId.current = null;
+    }
+
+    if (!conversationId) return;
+    if (joinedConversationId.current === conversationId) return;
+    joinedConversationId.current = conversationId;
+    socket.emit("chat:join", { conversationId }, (result) => {
+      if (
+        activeConversationId.current === conversationId &&
+        !result?.ok
+      ) {
+        joinedConversationId.current = null;
+        setError(result?.message || "Could not join this conversation.");
+      }
+    });
+  }, [activeConversation?.id]);
 
   useEffect(() => {
     const pending = messages.filter(
@@ -574,6 +718,14 @@ function Messages() {
                         Add an accepted friend to start messaging.
                       </p>
                     )}
+                  {!activeConversation && socketError && (
+                    <p
+                      role="status"
+                      className="p-4 text-sm text-amber-200"
+                    >
+                      {socketError}
+                    </p>
+                  )}
                 </>
               )}
             </div>
@@ -625,6 +777,14 @@ function Messages() {
                     className="mx-4 mt-3 rounded-lg border border-rose-300/20 bg-rose-400/10 px-3 py-2 text-sm text-rose-100"
                   >
                     {error}
+                  </p>
+                )}
+                {socketError && (
+                  <p
+                    role="status"
+                    className="mx-4 mt-3 rounded-lg border border-amber-300/20 bg-amber-400/10 px-3 py-2 text-sm text-amber-100"
+                  >
+                    {socketError}
                   </p>
                 )}
                 <div
